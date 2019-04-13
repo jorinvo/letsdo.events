@@ -1,0 +1,8 @@
+{:deps {aleph {:mvn/version "0.4.6"}
+        buddy/buddy-core {:mvn/version "1.5.0"}
+        hiccup {:mvn/version "1.0.5"}
+        metosin/jsonista {:mvn/version "0.2.2"}
+        org.clojure/java.jdbc {:mvn/version "0.7.8"}
+        org.postgresql/postgresql {:mvn/version "42.2.4"}}
+ :aliases {:repl {:extra-deps {cider/cider-nrepl {:mvn/version "0.21.1"}}
+                  :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.nrepl/cider-middleware]"]}}}
