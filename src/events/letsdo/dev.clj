@@ -1,15 +1,19 @@
 (ns events.letsdo.dev
   (:require [aleph.http :as http]
-            [manifold.deferred :as d]
             [byte-streams :as bs]
             [events.letsdo.server :refer [make-server]]
             [events.letsdo.config :refer [get-config]]))
 
-(def config (get-config "config.edn"))
+(comment
+
+(def config (get-config "config.dev.edn"))
+
 (def server (make-server config))
 
+(.close server)
 
-(-> @(http/get (str "http://localhost:" (:port config)))
+(-> @(http/get (str "http://localhost:" (:port config) "/login"))
   :body
-  bs/to-string
-  prn)
+  bs/to-string)
+
+  )

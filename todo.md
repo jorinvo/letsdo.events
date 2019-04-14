@@ -1,5 +1,18 @@
 # letsdo.events
 
+## Tech
+
+- include tachyons locally
+- figure out clojurescript
+- error page
+- security headers
+- gzip
+- html meta tags
+- production router
+- cache css
+
+
+
 ## Login
 
 - authenticate via mail
