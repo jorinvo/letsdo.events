@@ -1,6 +1,6 @@
-(ns lde.server.web
+(ns lde.web
   (:require [hiccup.core :refer [html]]
-            [hiccup.page :refer [include-css include-js]]))
+            [hiccup.page :refer [include-css]]))
 
 (defn render [options content]
   {:status 200
@@ -16,4 +16,4 @@
                                     "https://unpkg.com/tachyons@4.9.0/css/tachyons.min.css")
                  (include-css
                    "/css/main.css")]
-                [:body {} content (comment (include-js "/cljs-out/dev-main.js"))]])})
+                [:body {} content]])})

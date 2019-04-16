@@ -1,5 +1,5 @@
-(ns lde.server.pages.login
-  (:require [lde.server.web :refer [render]]))
+(ns lde.pages.login
+  (:require [lde.web :refer [render]]))
 
 (def login-click
   "var cl = document.getElementById('login-container').classList;

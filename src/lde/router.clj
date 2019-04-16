@@ -1,6 +1,6 @@
-(ns lde.server.router
-  (:require [lde.server.css :as css]
-            [lde.server.pages.login :as login]))
+(ns lde.router
+  (:require [lde.css :as css]
+            [lde.pages.login :as login]))
 
 (defn routes []
   [["/css/main.css" {:get css/handler}]

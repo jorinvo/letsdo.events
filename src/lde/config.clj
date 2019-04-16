@@ -1,4 +1,4 @@
-(ns lde.server.config
+(ns lde.config
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]))
 

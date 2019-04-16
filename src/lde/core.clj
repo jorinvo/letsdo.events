@@ -1,4 +1,4 @@
-(ns lde.server.core)
+(ns lde.core)
 
 (defn main- [& args]
   (prn "hi"))

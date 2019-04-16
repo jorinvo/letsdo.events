@@ -2,7 +2,7 @@
 
 ## Tech
 
-- build no js version first
+- login/signup click without js
 - signup with password
 - login with password
 - signup email only
