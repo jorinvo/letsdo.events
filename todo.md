@@ -2,16 +2,21 @@
 
 ## Tech
 
+- build no js version first
+- signup with password
+- login with password
+- signup email only
+- login email only
+- figwheel don't watch everything
+- production build
 - include tachyons locally
-- figure out clojurescript
 - error page
 - security headers
 - gzip
 - html meta tags
 - production router
 - cache css
-
-
+- js as progressive enhancement
 
 ## Login
 

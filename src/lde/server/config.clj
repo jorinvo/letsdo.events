@@ -1,4 +1,4 @@
-(ns events.letsdo.config
+(ns lde.server.config
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]))
 

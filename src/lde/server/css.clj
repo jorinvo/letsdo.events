@@ -1,4 +1,4 @@
-(ns events.letsdo.css
+(ns lde.server.css
   (:require [garden.core :refer [css]]))
 
 (def style

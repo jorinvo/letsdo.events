@@ -1,4 +1,4 @@
-(ns events.letsdo.core)
+(ns lde.server.core)
 
 (defn main- [& args]
   (prn "hi"))
