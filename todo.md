@@ -2,21 +2,34 @@
 
 ## Tech
 
-- login/signup click without js
+- select a DB
+- DB
 - signup with password
 - login with password
 - signup email only
 - login email only
-- figwheel don't watch everything
 - production build
 - include tachyons locally
+- db location from config
+- config defaults
 - error page
 - security headers
 - gzip
 - html meta tags
 - production router
 - cache css
+- spec for config
+- persist JWT secret
+- imprint and cookie warning
 - js as progressive enhancement
+- input validation
+  - required fields
+  - field formats
+  - existing email
+  - weak password
+- login delay against brute force
+- error page
+- protect form forgery: form nonce
 
 ## Login
 
