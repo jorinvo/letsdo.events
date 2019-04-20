@@ -1,9 +1,8 @@
-(ns lde.router
+(ns lde.web.router
   (:require [reitit.ring :as ring]
             [reitit.ring.middleware.parameters :refer [parameters-middleware]]
-            [lde.core :as core]
-            [lde.css :as css]
-            [lde.pages.login :as login]))
+            [lde.web.css :as css]
+            [lde.web.pages.login :as login]))
 
 (defn routes []
   [["/css/main.css" {:get css/handler}]
@@ -11,7 +10,7 @@
    ["/signup" {:get login/handler
                :post login/post-signup}]])
 
-(defn make-handler []
+(defn init [ctx]
   (ring/ring-handler
    (ring/router (routes))
    (ring/routes
@@ -20,4 +19,4 @@
    {:middleware [parameters-middleware
                  (fn [handler]
                    (fn [req]
-                     (handler (assoc req :ctx core/context))))]}))
+                     (handler (assoc req :ctx ctx))))]}))

@@ -1,18 +1,18 @@
 (ns lde.core.user
-  (:require [lde.auth :as auth]))
+  (:require [lde.auth :as auth]
+            [lde.db :as db]))
 
-(defn create [data {:keys [save-user gen-token]}]
+(defn create [data ctx]
   (let [enc-pw (auth/encrypt (get data "password"))
         user (-> data
                  (assoc "password" enc-pw)
-                 save-user)
-        token (gen-token (:uuid user))]
+                 (db/save-user ctx))
+        token (auth/gen-token (:uuid user))]
     {:token token}))
 
 (comment
 
-  (let [ctx {:save-user db/save-user
-             :gen-token auth/gen-token}]
+  (let [ctx (db/init "./db")]
     (create {"password" "hi"} ctx))
 
   (= (capture ctx [save-user (fn [x] {:uuid "uuid"})

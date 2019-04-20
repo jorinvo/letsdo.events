@@ -6,10 +6,13 @@
     [byte-streams :as bs]
     [manifold.stream :as stream]
     [reitit.ring :as ring]
-    [lde.router :refer [make-handler]]
+    [lde.web.router :as router]
+    [lde.db :as db]
     [lde.config :refer [get-config]]))
 
 (def config (get-config "config.dev.edn"))
+
+(def ctx (db/init "./db"))
 
 (defonce dev-websocket (atom nil))
 
@@ -27,7 +30,7 @@
   ((ring/ring-handler
      (ring/router
        [["/dev-websocket" {:get dev-websocket-handler}]])
-     (make-handler))
+     (router/init ctx))
    req))
 
 (defn make-dev-server []
@@ -35,14 +38,16 @@
 
 (defonce server (atom (make-dev-server)))
 
+(defn reset-server []
+  (.close @server)
+  (reset! server (make-dev-server)))
+
 (defn -main []
   (cider/init))
 
 (comment
 
-  (do
-    (.close @server)
-    (reset! server (make-dev-server)))
+  (reset-server)
 
   (reload-browser)
 

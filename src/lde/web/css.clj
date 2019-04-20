@@ -1,4 +1,4 @@
-(ns lde.css
+(ns lde.web.css
   (:require [garden.core :refer [css]]))
 
 (def style

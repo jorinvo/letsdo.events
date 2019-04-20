@@ -1,10 +1,11 @@
 (ns lde.db
   (:require [clojure.java.jdbc :as jdbc]))
 
-(defn create-db [path]
-  {:dbtype "h2" :dbname path})
-
-(def db (create-db "./db"))
+(defn init
+  ([path]
+   (init {} path))
+  ([ctx path]
+   (assoc ctx ::db {:dbtype "h2" :dbname path})))
 
 (def table-users
   "create table if not exists users (
@@ -18,12 +19,12 @@
     password_updated  timestamp not null default current_timestamp,
   )")
 
-(defn save-user [db data]
+(defn save-user [{:keys [::db]} data]
   (first (jdbc/insert! db "users" data)))
 
 (comment
-  (save-user db {"email" "abCd@de.com"})
-  (save-user db {:password nil})
+  (save-user (init "./db") {"email" "abCd@de.com"})
+  (save-user (init "./db") {:password nil})
   (->> (jdbc/query db "select * from users") (map :email))
   (jdbc/query db "show tables")
   (jdbc/query db "show columns from users")
