@@ -60,8 +60,13 @@
        [:button.login-button {:type "submit"} "Login"]
        [:button.signup-button {:type "submit"} "Signup"]]])))
 
-(defn post-signup [{:keys [ctx form-params]}]
-  (user/create form-params ctx)
+(defn post-signup [{:keys [ctx params]}]
+  (prn params)
+  ; name
+  ; email
+  ; password
+  ; link
+  ; (user/create  ctx)
   ; set cookie and redirect to homepage
   {:status 302
    :headers {"content-type" "text/plain"}

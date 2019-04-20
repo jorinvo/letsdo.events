@@ -55,4 +55,9 @@
       :body
       bs/to-string)
 
+  (-> @(http/post (str "http://localhost:" (:port config) "/signup")
+                  {:form-params {:email "hi" :nam "name"}})
+      :body
+      bs/to-string)
+
 )
