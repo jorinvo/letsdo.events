@@ -16,8 +16,8 @@
 (defn validate [password hash]
   (hashers/check password hash))
 
-(defn get-token [user]
-  (let [claims {:user user
+(defn gen-token [user-id]
+  (let [claims {:user user-id
                 :exp (time/plus (time/instant) jwt-token-duration)}
         options {:alg jwt-algorithm
                  :enc jwt-encoding}]
@@ -25,5 +25,5 @@
 
 (comment
   (validate "hi" (encrypt "hi"))
-  (get-token "user")
+  (gen-token "user")
 )

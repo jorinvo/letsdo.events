@@ -18,12 +18,12 @@
     password_updated  timestamp not null default current_timestamp,
   )")
 
-(defn create-user [data]
-  (jdbc/insert! db "users" data))
+(defn save-user [db data]
+  (first (jdbc/insert! db "users" data)))
 
 (comment
-  (create-user {"email" "abCd@de.com"})
-  (create-user {:password nil})
+  (save-user db {"email" "abCd@de.com"})
+  (save-user db {:password nil})
   (->> (jdbc/query db "select * from users") (map :email))
   (jdbc/query db "show tables")
   (jdbc/query db "show columns from users")

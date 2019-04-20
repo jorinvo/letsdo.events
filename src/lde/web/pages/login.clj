@@ -1,4 +1,4 @@
-(ns lde.pages.login
+(ns lde.web.pages.login
   (:require [reitit.core :refer [match->path]]
             [reitit.ring :refer [get-match]]
             [lde.web :refer [render]]
@@ -60,10 +60,9 @@
        [:button.login-button {:type "submit"} "Login"]
        [:button.signup-button {:type "submit"} "Signup"]]])))
 
-(defn post-signup [{:keys [form-params]}]
-  (user/create form-params)
-  ; generate JWT
+(defn post-signup [{:keys [ctx form-params]}]
+  (user/create form-params ctx)
   ; set cookie and redirect to homepage
-  {:status 200
+  {:status 302
    :headers {"content-type" "text/plain"}
    :body "ok"})

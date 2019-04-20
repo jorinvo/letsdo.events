@@ -30,6 +30,8 @@
 - login delay against brute force
 - error page
 - protect form forgery: form nonce
+- stats
+- [prevent redirect attacks](https://rundis.github.io/blog/2015/buddy_auth_part2.html)
 
 ## Login
 
