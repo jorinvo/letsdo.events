@@ -2,10 +2,10 @@
 
 ## Tech
 
-- select a DB
-- DB
-- signup with password
+- use session with cookie store
 - login with password
+- login redirect to other pages
+- redirect unauthorized to homepage
 - signup email only
 - login email only
 - production build
@@ -21,6 +21,7 @@
 - spec for config
 - persist JWT secret
 - imprint and cookie warning
+- [cookie settings](https://github.com/ring-clojure/ring/wiki/Cookies)
 - js as progressive enhancement
 - input validation
   - required fields
@@ -29,6 +30,7 @@
   - weak password
 - login delay against brute force
 - error page
+- allow app to be running at sub-route instead of top level
 - protect form forgery: form nonce
 - stats
 - [prevent redirect attacks](https://rundis.github.io/blog/2015/buddy_auth_part2.html)

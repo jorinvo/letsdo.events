@@ -12,7 +12,7 @@
 
 (def config (get-config "config.dev.edn"))
 
-(def ctx (db/init "./db"))
+(defonce ctx (atom (db/init "./db")))
 
 (defonce dev-websocket (atom nil))
 
@@ -30,7 +30,7 @@
   ((ring/ring-handler
      (ring/router
        [["/dev-websocket" {:get dev-websocket-handler}]])
-     (router/init ctx))
+     (router/init @ctx))
    req))
 
 (defn make-dev-server []
@@ -38,7 +38,9 @@
 
 (defonce server (atom (make-dev-server)))
 
-(defn reset-server []
+(defn reset []
+  (db/close @ctx)
+  (reset! ctx (db/init "./db"))
   (.close @server)
   (reset! server (make-dev-server)))
 
@@ -47,7 +49,7 @@
 
 (comment
 
-  (reset-server)
+  (reset)
 
   (reload-browser)
 
@@ -56,7 +58,7 @@
       bs/to-string)
 
   (-> @(http/post (str "http://localhost:" (:port config) "/signup")
-                  {:form-params {:email "hi" :nam "name"}})
+                  {:form-params {:email "hi" :password "name"}})
       :body
       bs/to-string)
 

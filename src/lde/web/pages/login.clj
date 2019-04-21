@@ -1,7 +1,9 @@
 (ns lde.web.pages.login
   (:require [reitit.core :refer [match->path]]
             [reitit.ring :refer [get-match]]
+            [ring.util.response :as response]
             [lde.web :refer [render]]
+            [lde.auth :as auth]
             [lde.core.user :as user]))
 
 (def login-click
@@ -61,13 +63,6 @@
        [:button.signup-button {:type "submit"} "Signup"]]])))
 
 (defn post-signup [{:keys [ctx params]}]
-  (prn params)
-  ; name
-  ; email
-  ; password
-  ; link
-  ; (user/create  ctx)
-  ; set cookie and redirect to homepage
-  {:status 302
-   :headers {"content-type" "text/plain"}
-   :body "ok"})
+  (let [{:keys [token]} (user/create params ctx)]
+    (auth/set-jwt-cookie (response/redirect "/" :see-other)
+                         token)))

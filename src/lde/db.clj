@@ -11,19 +11,10 @@
                      {:kv-backend "crux.kv.rocksdb.RocksKv"
                       :db-dir path}))))
 
-(def table-users
-  "create table if not exists users (
-    id                identity,
-    uuid              uuid default uuid(),
-    name              varchar(255),
-    email             varchar_ignorecase(255) unique,
-    link              varchar(1023),
-    created           timestamp not null default current_timestamp,
-    password          varchar(1023),
-    password_updated  timestamp not null default current_timestamp,
-  )")
+(defn close [{:keys [::crux]}]
+  (.close crux))
 
-(defn save-user [{:keys [::crux]} data]
+(defn save-user [data {:keys [::crux]}]
   (let [id (UUID/randomUUID)
         op [:crux.tx/put id (assoc data :crux.db/id id)]]
     (crux/submit-tx crux [op])
