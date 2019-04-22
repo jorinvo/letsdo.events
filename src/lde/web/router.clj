@@ -6,6 +6,7 @@
             [ring.middleware.session.cookie :refer [cookie-store]]
             [lde.core.settings :as settings]
             [lde.web.css :as css]
+            [lde.web.pages.topic :as topic]
             [lde.web.pages.home :as home]
             [lde.web.pages.login :as login]))
 
@@ -16,7 +17,10 @@
               :post login/post-login}]
    ["/logout" {:get login/logout}]
    ["/signup" {:get login/handler
-               :post login/post-signup}]])
+               :post login/post-signup}]
+   ["/new" {:get topic/handler
+            :post topic/post-topic}]
+   ["/for/:topic" {:get topic/overview}]])
 
 (defn make-context-middleware [ctx]
   (fn [handler]

@@ -62,7 +62,7 @@
        [:button.signup-button {:type "submit"} "Signup"]]])))
 
 (defn post-login [{:keys [ctx params]}]
-  (if-let [user (user/get params ctx)]
+  (if-let [user (user/login params ctx)]
     (-> (response/redirect "/" :see-other)
         (assoc :session (select-keys user [:id])))
     (response/bad-request "Invalid login")))

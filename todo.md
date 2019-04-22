@@ -2,10 +2,11 @@
 
 ## Tech
 
-- logout
-- login with password
+- html required fields
+- topic page
 - login redirect to other pages
-- redirect unauthorized to homepage
+- prevent duplicate topics
+- redirect unauthorized to homepage/login
 - signup email only
 - login email only
 - production build
@@ -14,7 +15,7 @@
 - include tachyons locally
 - db location from config
 - config defaults
-- error page
+- limit input char length (against to evil input)
 - security headers
 - login: redirect to home when already logged in
 - catch errors and never show to client
@@ -23,7 +24,6 @@
 - production router
 - cache css
 - spec for config
-- persist JWT secret
 - imprint and cookie warning
 - [cookie settings](https://github.com/ring-clojure/ring/wiki/Cookies)
 - js as progressive enhancement

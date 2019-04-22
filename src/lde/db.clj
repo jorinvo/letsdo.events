@@ -1,5 +1,6 @@
 (ns lde.db
-  (:require [crux.api :as crux])
+  (:require [clojure.set :refer [rename-keys]]
+            [crux.api :as crux])
   (:import [java.util UUID]
            [crux.api ICruxAPI]))
 
@@ -14,19 +15,18 @@
 (defn close [{:keys [::crux]}]
   (.close crux))
 
-(defn save-user [data {:keys [::crux]}]
+(defn save [data {:keys [::crux]}]
   (let [id (UUID/randomUUID)
         op [:crux.tx/put id (assoc data :crux.db/id id)]]
     (crux/submit-tx crux [op])
     (assoc data :id id)))
 
-(defn get-by-email [{:keys [::crux]} email]
+(defn get-by-attribute [{:keys [::crux]} attr value]
   (let [db (crux/db crux)
         q (crux/q db {:find '[id]
-                      :where '[[id :user/email email]]
-                      :args [{:email email}]})
-        user (crux/entity db (first (first q)))]
-    (assoc user :id (:crux.db/id user))))
+                      :where [['id attr value]]})
+        entity (crux/entity db (first (first q)))]
+    (rename-keys entity {:crux.db/id :id})))
 
 (defn set-setting [{:keys [::crux]} k v]
   (let [id (keyword "settings" (name k))]
@@ -50,7 +50,7 @@
   (set-setting ctx :cookie-secret "aaa")
   (get-setting ctx :cookie-secret)
 
-  (save-user ctx {:email "abCd@de.com"})
+  (save ctx {:email "abCd@de.com"})
   (< 0 (count (find-by-email ctx "hi@jorin.me")))
 
   (let [db (crux/db (::crux ctx))]
@@ -58,11 +58,12 @@
          (crux/q db '{:find [e]
                       :where [[e :email "abCd@de.com"]]})))
 
-  (save-user (init "./db") {"email" "abCd@de.com"})
-  (save-user (init "./db") {:password nil})
+  (save (init "./db") {"email" "abCd@de.com"})
+  (save (init "./db") {:password nil})
   (->> (jdbc/query db "select * from users") (map :email))
   (jdbc/query db "show tables")
   (jdbc/query db "show columns from users")
   (jdbc/execute! db table-users)
   (jdbc/execute! db "drop table users")
+
 )

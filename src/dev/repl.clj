@@ -106,4 +106,13 @@
       :body
       bs/to-string)
 
+  (-> @(http/post (str "http://localhost:" (:port config) "/new")
+                  {:form-params {:name "hi"
+                                 :visibility "invite"
+                                 :type "event"}})
+      :body
+      bs/to-string)
+
+  (db/get-by-attribute @ctx :topic/slug "hi")
+
 )

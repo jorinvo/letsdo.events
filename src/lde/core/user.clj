@@ -4,7 +4,7 @@
 
 (defn create [param ctx]
   (let [email (:email param)]
-    (if (db/get-by-email ctx email)
+    (if (db/get-by-attribute ctx :user/email email)
       :duplicate-email
       (if-let [pw (:password param)]
         (let [enc-pw (auth/hash pw)
@@ -12,12 +12,12 @@
                     :user/name (:name param)
                     :user/link (:link param)
                     :user/password enc-pw}
-              user (db/save-user data ctx)]
+              user (db/save data ctx)]
           user)
         :no-password))))
 
 (defn login [{:keys [email password]} ctx]
-  (let [user (db/get-by-email ctx email)]
+  (let [user (db/get-by-attribute ctx :user/email email)]
     (when (auth/validate password (:user/password user))
       user)))
 
