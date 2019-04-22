@@ -14,6 +14,8 @@
 - config defaults
 - error page
 - security headers
+- login: redirect to home when already logged in
+- catch errors and never show to client
 - gzip
 - html meta tags
 - production router

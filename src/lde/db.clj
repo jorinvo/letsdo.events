@@ -27,11 +27,27 @@
                       :args [{:email email}]})]
     q))
 
+(defn set-setting [{:keys [::crux]} k v]
+  (let [id (keyword "settings" (name k))]
+    (crux/submit-tx crux [[:crux.tx/put id {:crux.db/id id
+                                            :settings/value v}]])))
+
+(defn get-setting [{:keys [::crux]} k]
+  (let [db (crux/db crux)
+        id (keyword "settings" (name k))
+        q (crux/q db {:find '[value]
+                      :where '[[id :settings/value value]]
+                      :args [{:id id}]})]
+    (first (first q))))
+
 (comment
 
   (.close (::crux ctx))
 
   (def ctx (init "db"))
+
+  (set-setting ctx :cookie-secret "aaa")
+  (get-setting ctx :cookie-secret)
 
   (save-user ctx {:email "abCd@de.com"})
   (find-by-email ctx "abCd@de.com")

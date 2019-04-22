@@ -3,7 +3,6 @@
             [reitit.ring :refer [get-match]]
             [ring.util.response :as response]
             [lde.web :refer [render]]
-            [lde.auth :as auth]
             [lde.core.user :as user]))
 
 (def login-click
@@ -63,6 +62,8 @@
        [:button.signup-button {:type "submit"} "Signup"]]])))
 
 (defn post-signup [{:keys [ctx params]}]
-  (let [{:keys [token]} (user/create params ctx)]
-    (auth/set-jwt-cookie (response/redirect "/" :see-other)
-                         token)))
+  (let [user (user/create params ctx)
+        x (-> (response/redirect "/" :see-other)
+              (assoc :session (select-keys user [:id])))]
+    (prn x)
+    x))

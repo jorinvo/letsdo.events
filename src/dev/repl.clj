@@ -8,11 +8,15 @@
     [reitit.ring :as ring]
     [lde.web.router :as router]
     [lde.db :as db]
+    [lde.core.settings :as settings]
     [lde.config :refer [get-config]]))
 
 (def config (get-config "config.dev.edn"))
 
-(defonce ctx (atom (db/init "./db")))
+(defn make-context []
+  (db/init "./db"))
+
+(defonce ctx (atom (make-context)))
 
 (defonce dev-websocket (atom nil))
 
@@ -24,7 +28,7 @@
   (when-let [s @dev-websocket]
     (when-not (stream/closed? s)
       (do (stream/put! s "reload")
-          :ok))))
+          :browser-reloaded))))
 
 (defn dev-handler [req]
   ((ring/ring-handler
@@ -40,7 +44,7 @@
 
 (defn reset []
   (db/close @ctx)
-  (reset! ctx (db/init "./db"))
+  (reset! ctx (make-context))
   (.close @server)
   (reset! server (make-dev-server)))
 
@@ -52,6 +56,8 @@
   (reset)
 
   (reload-browser)
+
+  (settings/get-cookie-secret @ctx)
 
   (-> @(http/get (str "http://localhost:" (:port config) "/login"))
       :body
