@@ -2,13 +2,15 @@
 
 ## Tech
 
-- use session with cookie store
+- logout
 - login with password
 - login redirect to other pages
 - redirect unauthorized to homepage
 - signup email only
 - login email only
 - production build
+- required & valid mail
+- strong password
 - include tachyons locally
 - db location from config
 - config defaults
@@ -81,7 +83,6 @@
 - list public topics
 - request joining topic
 - login theme depending on goto parameter
-- logout
 -
 - Gravatar
 - notify about new activity (via mail)

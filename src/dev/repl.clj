@@ -1,5 +1,6 @@
 (ns dev.repl
   (:require
+    [clojure.string :as str]
     [clojure.repl]
     [cider-nrepl.main :as cider]
     [aleph.http :as http]
@@ -9,6 +10,7 @@
     [lde.web.router :as router]
     [lde.db :as db]
     [lde.core.settings :as settings]
+    [lde.core.user :as user]
     [lde.config :refer [get-config]]))
 
 (def config (get-config "config.dev.edn"))
@@ -18,44 +20,80 @@
 
 (defonce ctx (atom (make-context)))
 
-(defonce dev-websocket (atom nil))
+(defonce dev-websockets (atom []))
+
+(def dev-websocket-script
+  "<script>
+    devWs = new WebSocket(`ws://${location.host}/dev-websocket`)
+    devWs.onmessage = event => {
+      console.log(event.data)
+      window.location.reload()
+    }
+  </script>
+  </body>")
 
 (defn dev-websocket-handler [req]
   (let [s @(http/websocket-connection req)]
-    (reset! dev-websocket s)))
+    (swap! dev-websockets #(conj (remove stream/closed? %) s))))
+
+(defn inject-dev-websocket-script [req]
+  (if-let [body (:body req)]
+    (assoc req :body
+           (str/replace-first body
+                              "</body>"
+                              dev-websocket-script))
+    req))
 
 (defn reload-browser []
-  (when-let [s @dev-websocket]
-    (when-not (stream/closed? s)
-      (do (stream/put! s "reload")
-          :browser-reloaded))))
+  (let [c (->> @dev-websockets
+               (remove stream/closed?)
+               (map #(stream/put! % "reload"))
+               count)]
+    (if (< 0 c)
+      (str c " browser" (when (< 1 c) "s") " reloaded")
+      "no browser connected")))
 
 (defn dev-handler [req]
-  ((ring/ring-handler
-     (ring/router
-       [["/dev-websocket" {:get dev-websocket-handler}]])
-     (router/init @ctx))
-   req))
+  (-> req
+      ((if (and (= "/dev-websocket" (:uri req))
+                (= :get (:request-method req)))
+         dev-websocket-handler
+         (router/init @ctx)))
+      inject-dev-websocket-script))
 
 (defn make-dev-server []
   (http/start-server dev-handler config))
 
 (defonce server (atom (make-dev-server)))
 
-(defn reset []
+(defn stop []
   (db/close @ctx)
+  (.close @server))
+
+(defn start []
   (reset! ctx (make-context))
-  (.close @server)
   (reset! server (make-dev-server)))
+
+(defn reset []
+  (stop)
+  (start))
 
 (defn -main []
   (cider/init))
 
 (comment
 
+  (start)
+  (stop)
   (reset)
 
+  (clojure.repl/dir ring.util.response)
+
   (reload-browser)
+
+  (db/get-by-email @ctx "hi@jorin.me")
+
+  (user/login {:email "hi@jorin.me" :password "123"} @ctx)
 
   (settings/get-cookie-secret @ctx)
 

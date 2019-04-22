@@ -12,7 +12,9 @@
 (defn routes []
   [["/css/main.css" {:get css/handler}]
    ["/" {:get home/handler}]
-   ["/login" {:get login/handler}]
+   ["/login" {:get login/handler
+              :post login/post-login}]
+   ["/logout" {:get login/logout}]
    ["/signup" {:get login/handler
                :post login/post-signup}]])
 

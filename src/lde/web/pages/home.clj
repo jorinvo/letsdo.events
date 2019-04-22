@@ -2,8 +2,15 @@
   (:require
     [lde.web :refer [render]]))
 
-(defn handler [{s :session}]
-  (prn s)
+(defn handler [{{user-id :id} :session}]
   (render {:title "Let's do events!"
            :description "Hi"}
-          [:h1 "Let's do events!"]))
+          [:div
+           [:h1 "Let's do events!"]
+           (if user-id
+             [:div
+              [:a {:href "/new"} "New Topic"]
+              " "
+              [:a {:href "/logout"} "Logout"]]
+             [:div
+              [:a {:href "/login"} "Login/Signup"]])]))

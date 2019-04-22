@@ -61,9 +61,20 @@
        [:button.login-button {:type "submit"} "Login"]
        [:button.signup-button {:type "submit"} "Signup"]]])))
 
+(defn post-login [{:keys [ctx params]}]
+  (if-let [user (user/get params ctx)]
+    (-> (response/redirect "/" :see-other)
+        (assoc :session (select-keys user [:id])))
+    (response/bad-request "Invalid login")))
+
 (defn post-signup [{:keys [ctx params]}]
-  (let [user (user/create params ctx)
-        x (-> (response/redirect "/" :see-other)
-              (assoc :session (select-keys user [:id])))]
-    (prn x)
-    x))
+  (let [user (user/create params ctx)]
+    (condp = user
+      :duplicate-email (response/bad-request "Email already taken")
+      :no-password (response/bad-request "Email already taken")
+      (-> (response/redirect "/" :see-other)
+          (assoc :session (select-keys user [:id]))))))
+
+(defn logout [req]
+  (-> (response/redirect "/" :see-other)
+      (assoc :session nil)))

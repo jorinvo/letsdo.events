@@ -2,13 +2,6 @@
   (:require [hiccup.core :refer [html]]
             [hiccup.page :refer [include-css]]))
 
-(def dev-websocket
-  "devWs = new WebSocket(`ws://${location.host}/dev-websocket`)
-   devWs.onmessage = event => {
-     console.log(event.data)
-     window.location.reload()
-   }")
-
 (defn render [options content]
   {:status 200
    :headers {"content-type" "text/html"}
@@ -24,5 +17,4 @@
                  (include-css
                    "/css/main.css")]
                 [:body {}
-                 content
-                 [:script dev-websocket]]])})
+                 content]])})

@@ -20,12 +20,13 @@
     (crux/submit-tx crux [op])
     (assoc data :id id)))
 
-(defn find-by-email [{:keys [::crux]} email]
+(defn get-by-email [{:keys [::crux]} email]
   (let [db (crux/db crux)
-        q (crux/q db {:find '[id email]
-                      :where '[[id :email email]]
-                      :args [{:email email}]})]
-    q))
+        q (crux/q db {:find '[id]
+                      :where '[[id :user/email email]]
+                      :args [{:email email}]})
+        user (crux/entity db (first (first q)))]
+    (assoc user :id (:crux.db/id user))))
 
 (defn set-setting [{:keys [::crux]} k v]
   (let [id (keyword "settings" (name k))]
@@ -50,7 +51,7 @@
   (get-setting ctx :cookie-secret)
 
   (save-user ctx {:email "abCd@de.com"})
-  (find-by-email ctx "abCd@de.com")
+  (< 0 (count (find-by-email ctx "hi@jorin.me")))
 
   (let [db (crux/db (::crux ctx))]
     (map #(crux/entity db (first %))
