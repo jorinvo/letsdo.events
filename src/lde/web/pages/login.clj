@@ -1,9 +1,11 @@
 (ns lde.web.pages.login
-  (:require [reitit.core :refer [match->path]]
-            [reitit.ring :refer [get-match]]
-            [ring.util.response :as response]
-            [lde.web :refer [render]]
-            [lde.core.user :as user]))
+  (:require
+    [clojure.set :refer [rename-keys]]
+    [reitit.core :refer [match->path]]
+    [reitit.ring :refer [get-match]]
+    [ring.util.response :as response]
+    [lde.web :refer [render]]
+    [lde.core.user :as user]))
 
 (def login-click
   "var cl = document.getElementById('login-container').classList;
@@ -44,6 +46,7 @@
        [:label "Email: "
         [:input {:type "email"
                  :name "email"
+                 :required true
                  :placeholder "Email"}]]
        [:br]
        [:label [:i "Optionally"] " password: "
@@ -67,8 +70,15 @@
         (assoc :session (select-keys user [:id])))
     (response/bad-request "Invalid login")))
 
+(def user-key-map {:email :user/email
+                   :name :user/name
+                   :link :user/link
+                   :password :user/password})
+
 (defn post-signup [{:keys [ctx params]}]
-  (let [user (user/create params ctx)]
+  (let [user (-> params
+                 (rename-keys user-key-map)
+                 (user/create ctx))]
     (condp = user
       :duplicate-email (response/bad-request "Email already taken")
       :no-password (response/bad-request "Email already taken")

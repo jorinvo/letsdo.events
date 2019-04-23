@@ -1,9 +1,11 @@
 (ns lde.web.pages.topic
-  (:require [reitit.core :refer [match->path]]
-            [reitit.ring :refer [get-match]]
-            [ring.util.response :as response]
-            [lde.web :refer [render]]
-            [lde.core.topic :as topic]))
+  (:require
+    [clojure.set :refer [rename-keys]]
+    [reitit.core :refer [match->path]]
+    [reitit.ring :refer [get-match]]
+    [ring.util.response :as response]
+    [lde.web :refer [render]]
+    [lde.core.topic :as topic]))
 
 (def topic-visibility [{:value "public"
                         :label "Anyone can see and participate in this topic"}
@@ -51,14 +53,24 @@
                            :value value}]
                   " " label " "])))
         [:br]
-        [:button {:type "submit"} "Create Topic"]]])))
+        [:button {:type "submit"} "Create Topic"]
+        " "
+        [:a {:href "/"} "Cancel"]]])))
 
-(defn post-topic [{:keys [ctx params]}]
-  (let [topic (topic/create params ctx)]
+(def topic-keys {:name :topic/name
+                 :type :topic/type
+                 :visibility :topic/visibility})
+
+(defn post-topic [{:keys [ctx params session]}]
+  (let [topic (-> params
+                  (rename-keys topic-keys)
+                  (assoc :topic/creator (:id session))
+                  (topic/create ctx))]
     (response/redirect (str "/for/" (:topic/slug topic)) :see-other)))
 
 (defn overview [{:keys [path-params ctx]}]
   (let [{title :topic/name} (topic/get-by-slug (:topic path-params) ctx)]
     (render {:title title
              :description "Hi"}
-            [:span title])))
+            [:span title]
+            (map ))))

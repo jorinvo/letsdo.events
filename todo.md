@@ -2,7 +2,6 @@
 
 ## Tech
 
-- html required fields
 - topic page
 - login redirect to other pages
 - prevent duplicate topics
