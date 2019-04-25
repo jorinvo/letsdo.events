@@ -2,14 +2,27 @@
 
 ## Tech
 
-- topic page
+- event listing
+- event interest
+- event image upload
+- event join
+- event show attendees
+- event validate max attendees
+- event list - treat your own event differently
 - login redirect to other pages
 - prevent duplicate topics
 - redirect unauthorized to homepage/login
+- format event date nicely and handle missing values
+- cleanup db/{s,g}et-setting
 - signup email only
 - login email only
 - production build
+- hide join button when full
 - required & valid mail
+- event listing filters
+- generate non-conflicting slugs for topic and event
+- event times: support invalid dates / try to correct format
+- event listing search
 - strong password
 - include tachyons locally
 - db location from config
@@ -31,12 +44,14 @@
   - field formats
   - existing email
   - weak password
+  - remove additional keys
 - login delay against brute force
 - error page
 - allow app to be running at sub-route instead of top level
 - protect form forgery: form nonce
 - stats
 - [prevent redirect attacks](https://rundis.github.io/blog/2015/buddy_auth_part2.html)
+- upload logo
 
 ## Login
 
@@ -91,6 +106,10 @@
 - calendar integration
 - API keys
 - json export
+- interact with events/comments/app via email
+- integrate with Meetup.com
+  - sync to meetup.com
+  - sync form meetup.com
 
 ## Data Model
 

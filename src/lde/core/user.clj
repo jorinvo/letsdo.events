@@ -9,7 +9,10 @@
         (update :user/password auth/hash)
         (db/save ctx))))
 
-(defn login [{:keys [email password]} ctx]
+(defn get-by-id [ctx id]
+  (db/get-by-id ctx id))
+
+(defn login [email password ctx]
   (let [user (db/get-by-attribute ctx :user/email email)]
     (when (auth/validate password (:user/password user))
       user)))

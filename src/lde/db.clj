@@ -31,6 +31,10 @@
 (defn get-by-attribute [ctx attr value]
   (first (list-by-attribute ctx attr value)))
 
+(defn get-by-id [{:keys [::crux]} id]
+  (-> (crux/entity (crux/db crux) id)
+      (rename-keys {:crux.db/id :id})))
+
 (defn set-setting [{:keys [::crux]} k v]
   (let [id (keyword "settings" (name k))]
     (crux/submit-tx crux [[:crux.tx/put id {:crux.db/id id

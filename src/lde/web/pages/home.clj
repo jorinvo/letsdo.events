@@ -16,7 +16,7 @@
               [:div
                [:h3 "My Topics"]
                [:ul
-                (->> [(topic/list-by-user user-id ctx)]
+                (->> (topic/list-by-user user-id ctx)
                      (map (fn [{:keys [:topic/name :topic/slug]}]
                         [:li [:a {:href (str "/for/" slug)} name]])))]]]
              [:div

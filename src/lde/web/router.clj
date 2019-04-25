@@ -7,6 +7,7 @@
             [lde.core.settings :as settings]
             [lde.web.css :as css]
             [lde.web.pages.topic :as topic]
+            [lde.web.pages.event :as event]
             [lde.web.pages.home :as home]
             [lde.web.pages.login :as login]))
 
@@ -20,7 +21,11 @@
                :post login/post-signup}]
    ["/new" {:get topic/handler
             :post topic/post-topic}]
-   ["/for/:topic" {:get topic/overview}]])
+   ["/for/:topic"
+    ["" {:get topic/overview}]
+    ["/new" {:get event/new
+             :post event/post}]
+    ["/about/:event" {:get event/get}]]])
 
 (defn make-context-middleware [ctx]
   (fn [handler]
