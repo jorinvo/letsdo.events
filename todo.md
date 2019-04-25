@@ -2,7 +2,6 @@
 
 ## Tech
 
-- event listing
 - event interest
 - event image upload
 - event join

@@ -1,5 +1,6 @@
 (ns lde.web
-  (:require [hiccup.core :refer [html]]
+  (:require [clojure.string :as str]
+            [hiccup.core :refer [html h]]
             [hiccup.page :refer [include-css]]))
 
 (defn render [options content]
@@ -18,3 +19,6 @@
                    "/css/main.css")]
                 [:body {}
                  content]])})
+
+(defn escape-with-br [s]
+  (str/replace (h s) #"(\r\n|\r|\n)" "<br>"))

@@ -11,3 +11,7 @@
 (defn get-by-slug [slug ctx]
   (db/get-by-attribute ctx :event/slug slug))
 
+(defn list-by-topic [topic-id ctx]
+  (db/list-by-attribute ctx :event/topic topic-id))
+
+

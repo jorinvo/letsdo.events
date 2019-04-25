@@ -7,7 +7,8 @@
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
-    [lde.web :refer [render]]
+    [hiccup.core :refer [h]]
+    [lde.web :refer [render escape-with-br]]
     [lde.core.event :as event]
     [lde.core.interest :as interest]
     [lde.core.topic :as topic]
@@ -27,21 +28,23 @@
         join-url (str "/for/" topic-slug "/about/" (:event/slug e) "/join")
         attendees 0]
     (render
-     {:title title
-      :description "hi"}
-     [:div
-      "< image goes here >"
-      [:h1 title]
-      (if-let [{organizer :user/name} (user/get-by-id ctx (:event/organizer e))]
-        (str " by " (if (empty? organizer) "Anonymous" organizer))
-        "there is no organizer yet! can you take over? < take over >")
+      {:title title
+       :description "hi"}
       [:div
-       "starting " (:event/start-date e) " at " (:event/start-time e)
-       ", until " (:event/start-date e) " at " (:event/start-time e)]
-      [:p (:event/description e)]
-      [:form {:action join-url :method "post"}
+       "< image goes here >"
+       [:h1 (h title)]
+       (if-let [{organizer :user/name} (user/get-by-id ctx (:event/organizer e))]
+         (str " by " (if (empty? organizer) "Anonymous" organizer))
+         "there is no organizer yet! can you take over? < take over >")
+       [:div
+        "starting " (:event/start-date e) " at " (:event/start-time e)
+        ", until " (:event/start-date e) " at " (:event/start-time e)]
+       (when-let [l (:event/location e)]
+         [:p (h l)])
+       [:p (escape-with-br (:event/description e))]
+       [:form {:action join-url :method "post"}
         [:button {:type "submit"} "Join " (topic/singular topic)]]
-      attendees (when-let [m (:event/max-attendees e)] (str "/" m)) " attendees"])))
+       attendees (when-let [m (:event/max-attendees e)] (str "/" m)) " attendees"])))
 
 (comment time/local-date-time (str (:start-date params) "T" (:start-time params)))
 
@@ -124,15 +127,18 @@
                  :end-time :event/end-time})
 
 (defn post [{:keys [ctx params path-params session]}]
-  (let [user-id (:id session)
+  (let [topic-slug (:topic path-params)
+        topic (topic/get-by-slug topic-slug ctx)
+        user-id (:id session)
         organizer (when (= "organizer" (:intention params))
                     user-id)
         event (-> params
                   (rename-keys event-keys)
                   (assoc :event/creator user-id
-                         :event/organizer organizer)
+                         :event/organizer organizer
+                         :event/topic (:id topic))
                   (event/create ctx))
-        url (str "/for/" (:topic path-params) "/about/" (:event/slug event))]
+        url (str "/for/" topic-slug "/about/" (:event/slug event))]
     (when (= "interested" (:intention params))
       (interest/add ctx (:id event) user-id))
     (response/redirect url :see-other)))
