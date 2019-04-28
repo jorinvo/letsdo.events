@@ -21,15 +21,32 @@
     (crux/submit-tx crux [op])
     (assoc data :id id)))
 
-(defn list-by-attribute [{:keys [::crux]} attr value]
+(defn list-by-attributes [{:keys [::crux]} attrs]
   (let [db (crux/db crux)]
-    (->> (crux/q db {:find '[id] :where [['id attr value]]})
+    (->> (crux/q db {:find '[id]
+                     :where (mapv (fn [[attr value]]
+                                    ['id attr value]) attrs)})
          (map first)
          (map #(crux/entity db %))
          (map #(rename-keys % {:crux.db/id :id})))))
 
+(defn list-by-attribute [ctx attr value]
+  (list-by-attributes ctx {attr value}))
+
+(defn get-by-attributes [ctx attrs]
+  (first (list-by-attributes ctx attrs)))
+
 (defn get-by-attribute [ctx attr value]
   (first (list-by-attribute ctx attr value)))
+
+(defn count-by-attributes [{:keys [::crux]} attrs]
+  (->> (crux/q (crux/db crux) {:find '[id]
+                               :where (mapv (fn [[attr value]]
+                                              ['id attr value]) attrs)})
+       count))
+
+(defn count-by-attribute [ctx attr value]
+  (count-by-attributes ctx {attr value}))
 
 (defn get-by-id [{:keys [::crux]} id]
   (-> (crux/entity (crux/db crux) id)

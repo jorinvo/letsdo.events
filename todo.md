@@ -2,22 +2,27 @@
 
 ## Tech
 
-- event interest
-- event image upload
-- event join
-- event show attendees
+- event show when you joined
 - event validate max attendees
+- event image upload
 - event list - treat your own event differently
+- use router middleware to fetch topic/event
 - login redirect to other pages
 - prevent duplicate topics
 - redirect unauthorized to homepage/login
 - format event date nicely and handle missing values
+- event interest
 - cleanup db/{s,g}et-setting
 - signup email only
 - login email only
+- does DB need singular functions?
+- validate image format and size
+- image resizing
 - production build
 - hide join button when full
 - required & valid mail
+- API specs
+- data generation via API+specs
 - event listing filters
 - generate non-conflicting slugs for topic and event
 - event times: support invalid dates / try to correct format
@@ -51,6 +56,7 @@
 - stats
 - [prevent redirect attacks](https://rundis.github.io/blog/2015/buddy_auth_part2.html)
 - upload logo
+- monitoring/error tracking
 
 ## Login
 
@@ -109,6 +115,8 @@
 - integrate with Meetup.com
   - sync to meetup.com
   - sync form meetup.com
+- i18n
+- a11y
 
 ## Data Model
 
@@ -154,15 +162,3 @@ POST /api/event
 PUT /api/event
 PUT /api/me
 POST /api/join
-
-
-## Tools
-
-- clojure
-- postgres
-- tools.deps
-- reitit
-- tachyons
-- hiccup
-- garden
-- buddy

@@ -6,6 +6,7 @@
     [ring.util.response :as response]
     [hiccup.core :refer [h]]
     [lde.web :refer [render escape-with-br]]
+    [lde.web.pages.event :refer [event-item]]
     [lde.core.topic :as topic]
     [lde.core.user :as user]
     [lde.core.event :as event]))
@@ -76,35 +77,19 @@
                   (topic/create ctx))]
     (response/redirect (str "/for/" (:topic/slug topic)) :see-other)))
 
-(defn- event-item [event topic ctx]
-  (let [title (:event/name event)
-        join-url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event) "/join")
-        attendees 0]
-    [:li
-     "< image goes here >"
-     [:h3 (h title)]
-     (if-let [{organizer :user/name} (user/get-by-id ctx (:event/organizer event))]
-       (str " by " (if (empty? organizer) "Anonymous" organizer))
-       "there is no organizer yet! can you take over? < take over >")
-     [:div
-      "starting " (:event/start-date event) " at " (:event/start-time event)
-      ", until " (:event/start-date event) " at " (:event/start-time event)]
-     (when-let [l (:event/location event)]
-       [:p (h l)])
-     [:p (escape-with-br (:event/description event))]
-     [:form {:action join-url :method "post"}
-      [:button {:type "submit"} "Join " (topic/singular topic)]]
-     attendees (when-let [m (:event/max-attendees event)] (str "/" m)) " attendees"]))
+
 
 (defn overview [{:keys [path-params ctx]}]
   (let [topic (topic/get-by-slug (:topic path-params) ctx)
+        topic-url (str "/for/" (:topic path-params))
         events (event/list-by-topic (:id topic) ctx)]
     (render {:title (:topic/name topic)
              :description "Hi"}
             [:div
-             [:h1 (:topic/name topic)]
+             [:a {:href topic-url}
+              [:h1 (:topic/name topic)]]
              [:h2 (:topic/description topic)]
              [:div
               [:a {:href (str "/for/" (:topic/slug topic) "/new")}
                "New " (topic/singular topic)]]
-             [:ul (map #(event-item % topic ctx) events)]])))
+             [:ul (map #(vector :li (event-item % topic ctx)) events)]])))

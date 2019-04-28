@@ -11,6 +11,7 @@
     [lde.web :refer [render escape-with-br]]
     [lde.core.event :as event]
     [lde.core.interest :as interest]
+    [lde.core.attendees :as attendees]
     [lde.core.topic :as topic]
     [lde.core.user :as user]))
 
@@ -20,31 +21,43 @@
                   :interest
                   {:text "This is only somthing I'm interested in"}))
 
-(defn get [{:keys [ctx params path-params session]}]
+(defn event-item [event topic ctx]
+  (let [title (:event/name event)
+        event-url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
+        join-url (str event-url "/join")
+        attendees (attendees/count-by-event-id ctx (:id event))]
+    [:div
+     "< image goes here >"
+     [:a {:href event-url}
+      [:h3 (h title)]]
+     (if-let [{organizer :user/name} (user/get-by-id ctx (:event/organizer event))]
+       (str " by " (if (empty? organizer) "Anonymous" organizer))
+       "there is no organizer yet! can you take over? < take over >")
+     [:div
+      "starting " (:event/start-date event) " at " (:event/start-time event)
+      ", until " (:event/start-date event) " at " (:event/start-time event)]
+     (when-let [l (:event/location event)]
+       [:p (h l)])
+     [:p (escape-with-br (:event/description event))]
+     [:form {:action join-url :method "post"}
+      [:button {:type "submit"} "Join " (topic/singular topic)]]
+     attendees (when-let [m (:event/max-attendees event)] (str "/" m)) " attendees"]))
+
+(defn get [{:keys [ctx path-params]}]
   (let [e (event/get-by-slug (:event path-params) ctx)
         title (:event/name e)
         topic-slug (:topic path-params)
         topic (topic/get-by-slug topic-slug ctx)
-        join-url (str "/for/" topic-slug "/about/" (:event/slug e) "/join")
-        attendees 0]
+        topic-url (str "/for/" topic-slug)]
     (render
       {:title title
        :description "hi"}
       [:div
-       "< image goes here >"
-       [:h1 (h title)]
-       (if-let [{organizer :user/name} (user/get-by-id ctx (:event/organizer e))]
-         (str " by " (if (empty? organizer) "Anonymous" organizer))
-         "there is no organizer yet! can you take over? < take over >")
-       [:div
-        "starting " (:event/start-date e) " at " (:event/start-time e)
-        ", until " (:event/start-date e) " at " (:event/start-time e)]
-       (when-let [l (:event/location e)]
-         [:p (h l)])
-       [:p (escape-with-br (:event/description e))]
-       [:form {:action join-url :method "post"}
-        [:button {:type "submit"} "Join " (topic/singular topic)]]
-       attendees (when-let [m (:event/max-attendees e)] (str "/" m)) " attendees"])))
+       [:a {:href topic-url}
+        [:h1 (:topic/name topic)]]
+       [:h2 (:topic/description topic)]
+       (event-item e topic ctx)
+       ])))
 
 (comment time/local-date-time (str (:start-date params) "T" (:start-time params)))
 
@@ -141,6 +154,14 @@
         url (str "/for/" topic-slug "/about/" (:event/slug event))]
     (when (= "interested" (:intention params))
       (interest/add ctx (:id event) user-id))
+    (response/redirect url :see-other)))
+
+(defn join [{:keys [ctx path-params session]}]
+  (let [event (event/get-by-slug (:event path-params) ctx)
+        topic-slug (:topic path-params)
+        user-id (:id session)
+        url (str "/for/" topic-slug "/about/" (:event/slug event))]
+    (attendees/add ctx (:id event) user-id)
     (response/redirect url :see-other)))
 
 

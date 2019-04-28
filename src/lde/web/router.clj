@@ -25,7 +25,9 @@
     ["" {:get topic/overview}]
     ["/new" {:get event/new
              :post event/post}]
-    ["/about/:event" {:get event/get}]]])
+    ["/about/:event"
+     ["/" {:get event/get}]
+     ["/join" {:post event/join}]]]])
 
 (defn make-context-middleware [ctx]
   (fn [handler]
