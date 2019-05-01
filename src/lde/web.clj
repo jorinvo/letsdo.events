@@ -26,7 +26,9 @@
   (str/replace (h s) #"(\r\n|\r|\n)" "<br>"))
 
 (defn multipart-image-to-data-uri [img]
- (str "data:"
-      (:content-type img)
-      ";base64,"
-      (bytes->str (base64/encode (:bytes img)))))
+  (let [{b :bytes} img]
+    (when-not (empty? b)
+      (str "data:"
+           (:content-type img)
+           ";base64,"
+           (bytes->str (base64/encode b))))))

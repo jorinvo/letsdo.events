@@ -180,6 +180,10 @@
   (let [event (event/get-by-slug (:event path-params) ctx)
         topic-slug (:topic path-params)
         user-id (:id session)
-        url (str "/for/" topic-slug "/about/" (:event/slug event))]
-    (attendees/add ctx (:id event) user-id)
-    (response/redirect url :see-other)))
+        url (str "/for/" topic-slug "/about/" (:event/slug event))
+        attendees-count (attendees/count-by-event-id ctx (:id event))
+        max-attendees (:event/max-attendees event)]
+    (if (and max-attendees (>= attendees-count  max-attendees))
+      (do (attendees/add ctx (:id event) user-id)
+          (response/redirect url :see-other))
+      (response/bad-request "event full"))))
