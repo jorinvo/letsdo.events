@@ -8,18 +8,12 @@
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
     [hiccup.core :refer [h]]
-    [lde.web :refer [render escape-with-br]]
+    [lde.web :refer [render escape-with-br multipart-image-to-data-uri]]
     [lde.core.event :as event]
     [lde.core.interest :as interest]
     [lde.core.attendees :as attendees]
     [lde.core.topic :as topic]
     [lde.core.user :as user]))
-
-(def intentions (array-map
-                  :organizer
-                  {:text "I will be the organizer"}
-                  :interest
-                  {:text "This is only somthing I'm interested in"}))
 
 (defn event-item [event topic user ctx]
   (let [title (:event/name event)
@@ -28,10 +22,12 @@
         attendees (attendees/count-by-event-id ctx (:id event))
         max-attendees (let [m (:event/max-attendees event)]
                         (if (empty? m)
-                          0
+                          nil
                           (Integer/parseInt m)))]
     [:div
-     "< image goes here >"
+     (when-let [image (:event/image event)]
+               [:img {:src image
+                      :alt "event image"}])
      [:a {:href event-url}
       [:h3 (h title)]]
      (if-let [{organizer :user/name} (user/get-by-id ctx (:event/organizer event))]
@@ -44,13 +40,13 @@
        [:p (h l)])
      [:p (escape-with-br (:event/description event))]
      attendees
-     (if (= max-attendees 0)
-       (if (= attendees 1) " attendee" " attendees")
-       (str "/" max-attendees " " (if (= max-attendees 1) "attendee" "attendees")))
+     (if max-attendees
+       (str "/" max-attendees " " (if (= max-attendees 1) "attendee" "attendees"))
+       (if (= attendees 1) " attendee" " attendees"))
      (cond
        (attendees/get ctx (:id event) (:id user))
-       [:span " You are part of this!"]
-       (>= attendees max-attendees)
+       [:span " - including you!"]
+       (and max-attendees (>= attendees max-attendees))
        [:span " No spot left!"]
        :else
        [:form {:action join-url :method "post"}
@@ -84,14 +80,16 @@
        :description "Hi"}
       [:div
        [:h1.f1 title]
-       [:form {:action path :method "post"}
+       [:form {:action path
+               :method "post"
+               :enctype "multipart/form-data"}
         [:label (topic/singular topic) " title: "
          [:input {:type "text"
                   :name "name"
                   :required true
                   :placeholder (str (topic/singular topic) " name")}]]
         [:br]
-        (->> intentions
+        (->> event/intentions
              (map (fn [[value {label :text}]]
                     [:label
                      [:input {:type "radio"
@@ -108,7 +106,10 @@
                     :cols 50
                     }]
         [:br]
-        "optional: < Image goes here >"
+        [:label "optional: Select an image"
+         [:input {:type "file"
+                  :name "image"
+                  :accept ".jpg, .jpeg, .png"}]]
         [:br]
         "When "
         [:br]
@@ -151,22 +152,27 @@
                  :start-date :event/start-date
                  :start-time :event/start-time
                  :end-date :event/end-date
-                 :end-time :event/end-time})
+                 :end-time :event/end-time
+                 :image :event/image})
 
-(defn post [{:keys [ctx params path-params session]}]
+(defn post [{:keys [ctx parameters path-params session]}]
   (let [topic-slug (:topic path-params)
         topic (topic/get-by-slug topic-slug ctx)
         user-id (:id session)
-        organizer (when (= "organizer" (:intention params))
+        multipart (:multipart parameters)
+        intention multipart
+        organizer (when (= "organizer" intention)
                     user-id)
-        event (-> params
+        event (-> multipart
+                  (select-keys (keys event-keys))
                   (rename-keys event-keys)
                   (assoc :event/creator user-id
                          :event/organizer organizer
                          :event/topic (:id topic))
+                  (update :event/image multipart-image-to-data-uri)
                   (event/create ctx))
         url (str "/for/" topic-slug "/about/" (:event/slug event))]
-    (when (= "interested" (:intention params))
+    (when (= "interested" intention)
       (interest/add ctx (:id event) user-id))
     (response/redirect url :see-other)))
 
@@ -177,6 +183,3 @@
         url (str "/for/" topic-slug "/about/" (:event/slug event))]
     (attendees/add ctx (:id event) user-id)
     (response/redirect url :see-other)))
-
-
-

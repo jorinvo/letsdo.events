@@ -3,6 +3,14 @@
     [cuerdas.core :as cuerdas]
     [lde.db :as db]))
 
+(def visibilities (array-map
+                  :public
+                  {:label "Anyone can see and participate in this topic"}
+                  :invite
+                  {:label "You need to be invited to topic"}
+                  :request
+                  {:label "You can request to join this topic"}))
+
 (def types (array-map
              :activities
              {:singular "Activity"

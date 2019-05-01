@@ -1,23 +1,17 @@
 (ns lde.web.pages.topic
+  (:refer-clojure :exclude [new])
   (:require
     [clojure.set :refer [rename-keys]]
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
-    [lde.web :refer [render escape-with-br]]
+    [lde.web :refer [render escape-with-br multipart-image-to-data-uri]]
     [lde.web.pages.event :refer [event-item]]
     [lde.core.topic :as topic]
     [lde.core.user :as user]
     [lde.core.event :as event]))
 
-(def topic-visibility [{:value :public
-                        :label "Anyone can see and participate in this topic"}
-                       {:value :invite
-                        :label "You need to be invited to topic"}
-                       {:value :request
-                        :label "You can request to join this topic"}])
-
-(defn handler [req]
+(defn new [req]
   (let [path (-> req get-match match->path)]
     (render
       {:title "Setup New Topic"
@@ -25,7 +19,9 @@
       [:div
        [:h1.f1
         "Setup new topic"]
-       [:form {:action path :method "post"}
+       [:form {:action path
+               :method "post"
+               :enctype "multipart/form-data"}
         [:label "Topic name: "
          [:input {:type "text"
                   :name "name"
@@ -37,10 +33,13 @@
                   :name "description"
                   :placeholder "Description"}]]
         [:br]
-        "optional: < Image goes here >"
+        [:label "optional: Select an image"
+         [:input {:type "file"
+                  :name "image"
+                  :accept ".jpg, .jpeg, .png"}]]
         [:br]
-        (->> topic-visibility
-             (map (fn [{:keys [value label]}]
+        (->> topic/visibilities
+             (map (fn [[value {:keys [label]}]]
                     [:label
                      [:input {:type "radio"
                               :name "visibility"
@@ -65,18 +64,19 @@
 (def topic-keys {:name :topic/name
                  :type :topic/type
                  :visibility :topic/visibility
-                 :description :topic/description})
+                 :description :topic/description
+                 :image :topic/image})
 
-(defn post-topic [{:keys [ctx params session]}]
-  (let [topic (-> params
+(defn post [{:keys [ctx session parameters]}]
+  (let [topic (-> (:multipart parameters)
+                  (select-keys (keys topic-keys))
                   (rename-keys topic-keys)
                   (assoc :topic/creator (:id session))
                   (update :topic/visibility keyword)
                   (update :topic/type keyword)
+                  (update :topic/image multipart-image-to-data-uri)
                   (topic/create ctx))]
     (response/redirect (str "/for/" (:topic/slug topic)) :see-other)))
-
-
 
 (defn overview [{:keys [path-params ctx session]}]
   (let [topic (topic/get-by-slug (:topic path-params) ctx)
@@ -87,6 +87,9 @@
              :description "Hi"}
             [:div
              [:a {:href topic-url}
+              (when-let [image (:topic/image topic)]
+               [:img {:src image
+                      :alt "logo"}])
               [:h1 (:topic/name topic)]]
              [:h2 (:topic/description topic)]
              [:div

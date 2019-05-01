@@ -2,20 +2,22 @@
 
 ## Tech
 
-- event image upload
-- format event date nicely and handle missing values
-- event interest
 - signup email only
 - login email only
 - "unjoin" event
 - does DB need singular functions?
 - validate image format and size
 - event list - treat your own event differently
+- image preview
 - image resizing
+- storing images as binary in crux
+- restrict images size
 - production build
 - hide join button when full
-- required & valid mail
+- require & validate mail
+- nice error/spec messages for dev
 - API specs
+- format event date nicely and handle missing values
 - data generation via API+specs
 - event listing filters
 - generate non-conflicting slugs for topic and event
@@ -38,12 +40,12 @@
 - allow editing slug and check for conflicts
 - [cookie settings](https://github.com/ring-clojure/ring/wiki/Cookies)
 - js as progressive enhancement
-- input validation
-  - required fields
-  - field formats
-  - existing email
-  - weak password
-  - remove additional keys
+- check for existing email
+- check for weak password
+- form inputs, remove additional fields / validate for no additional fields
+- validation for signup form
+- validation for login form
+- max length input validation
 - login delay against brute force
 - error page
 - allow app to be running at sub-route instead of top level
@@ -79,6 +81,7 @@
 - multiple organizers per event
 - list public topics
 - request joining topic
+- event interest
 - login theme depending on goto parameter
 - Gravatar
 - notify about new activity (via mail)
@@ -92,6 +95,8 @@
 - i18n
 - a11y
 - use router middleware to fetch topic/event
+- use API specs for generative testing
+- spec for API responses
 
 ## Data Model
 
