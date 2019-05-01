@@ -5,8 +5,8 @@
             [lde.db :as db]))
 
 (defn get-cookie-secret [ctx]
-  (if-let [secret (db/get-setting ctx :cookie-secret)]
+  (if-let [secret (db/get-key ctx :settings/cookie-secret)]
     (base64/decode (str->bytes secret))
     (let [new-secret (nonce/random-bytes 16)]
-      (db/set-setting ctx :cookie-secret (bytes->str (base64/encode new-secret)))
+      (db/set-key ctx :settings/cookie-secret (bytes->str (base64/encode new-secret)))
       new-secret)))

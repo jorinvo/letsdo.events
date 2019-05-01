@@ -4,7 +4,6 @@
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
-    [hiccup.core :refer [h]]
     [lde.web :refer [render escape-with-br]]
     [lde.web.pages.event :refer [event-item]]
     [lde.core.topic :as topic]
@@ -79,10 +78,11 @@
 
 
 
-(defn overview [{:keys [path-params ctx]}]
+(defn overview [{:keys [path-params ctx session]}]
   (let [topic (topic/get-by-slug (:topic path-params) ctx)
         topic-url (str "/for/" (:topic path-params))
-        events (event/list-by-topic (:id topic) ctx)]
+        events (event/list-by-topic (:id topic) ctx)
+        user (user/get-by-id ctx (:id session))]
     (render {:title (:topic/name topic)
              :description "Hi"}
             [:div
@@ -92,4 +92,4 @@
              [:div
               [:a {:href (str "/for/" (:topic/slug topic) "/new")}
                "New " (topic/singular topic)]]
-             [:ul (map #(vector :li (event-item % topic ctx)) events)]])))
+             [:ul (map #(vector :li (event-item % topic user ctx)) events)]])))

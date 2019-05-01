@@ -21,11 +21,15 @@
                   :interest
                   {:text "This is only somthing I'm interested in"}))
 
-(defn event-item [event topic ctx]
+(defn event-item [event topic user ctx]
   (let [title (:event/name event)
         event-url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
         join-url (str event-url "/join")
-        attendees (attendees/count-by-event-id ctx (:id event))]
+        attendees (attendees/count-by-event-id ctx (:id event))
+        max-attendees (let [m (:event/max-attendees event)]
+                        (if (empty? m)
+                          0
+                          (Integer/parseInt m)))]
     [:div
      "< image goes here >"
      [:a {:href event-url}
@@ -39,16 +43,26 @@
      (when-let [l (:event/location event)]
        [:p (h l)])
      [:p (escape-with-br (:event/description event))]
-     [:form {:action join-url :method "post"}
-      [:button {:type "submit"} "Join " (topic/singular topic)]]
-     attendees (when-let [m (:event/max-attendees event)] (str "/" m)) " attendees"]))
+     attendees
+     (if (= max-attendees 0)
+       (if (= attendees 1) " attendee" " attendees")
+       (str "/" max-attendees " " (if (= max-attendees 1) "attendee" "attendees")))
+     (cond
+       (attendees/get ctx (:id event) (:id user))
+       [:span " You are part of this!"]
+       (>= attendees max-attendees)
+       [:span " No spot left!"]
+       :else
+       [:form {:action join-url :method "post"}
+        [:button {:type "submit"} "Join " (topic/singular topic)]])]))
 
-(defn get [{:keys [ctx path-params]}]
-  (let [e (event/get-by-slug (:event path-params) ctx)
-        title (:event/name e)
+(defn get [{:keys [ctx path-params session]}]
+  (let [event (event/get-by-slug (:event path-params) ctx)
+        title (:event/name event)
         topic-slug (:topic path-params)
         topic (topic/get-by-slug topic-slug ctx)
-        topic-url (str "/for/" topic-slug)]
+        topic-url (str "/for/" topic-slug)
+        user (user/get-by-id ctx (:id session))]
     (render
       {:title title
        :description "hi"}
@@ -56,7 +70,7 @@
        [:a {:href topic-url}
         [:h1 (:topic/name topic)]]
        [:h2 (:topic/description topic)]
-       (event-item e topic ctx)
+       (event-item event topic user ctx)
        ])))
 
 (comment time/local-date-time (str (:start-date params) "T" (:start-time params)))

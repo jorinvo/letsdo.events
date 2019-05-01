@@ -2,21 +2,15 @@
 
 ## Tech
 
-- event show when you joined
-- event validate max attendees
 - event image upload
-- event list - treat your own event differently
-- use router middleware to fetch topic/event
-- login redirect to other pages
-- prevent duplicate topics
-- redirect unauthorized to homepage/login
 - format event date nicely and handle missing values
 - event interest
-- cleanup db/{s,g}et-setting
 - signup email only
 - login email only
+- "unjoin" event
 - does DB need singular functions?
 - validate image format and size
+- event list - treat your own event differently
 - image resizing
 - production build
 - hide join button when full
@@ -41,6 +35,7 @@
 - cache css
 - spec for config
 - imprint and cookie warning
+- allow editing slug and check for conflicts
 - [cookie settings](https://github.com/ring-clojure/ring/wiki/Cookies)
 - js as progressive enhancement
 - input validation
@@ -57,31 +52,13 @@
 - [prevent redirect attacks](https://rundis.github.io/blog/2015/buddy_auth_part2.html)
 - upload logo
 - monitoring/error tracking
-
-## Login
-
 - authenticate via mail
-- signup with password
-
-## New Topic
-
+- signup via mail
 - create a topic
 - suggest activity/talk/thing
-- title, description, (requirements)
-- max number of attendees
-- possible date field
-- upload picture
-
-## List Events
-
-- filter activities to organizing and signed up for
-- search/filter by name/description
-- join
-
-## later
-
 - event edit view
 - topic settings page
+- sorting of event list
 - use your own colors and logo
 - add introduction text
 - undo join
@@ -97,17 +74,14 @@
 - delete account
 - single topic mode
 - schedule/commit
+- redirect unauthorized to login with redirect URI
 - edit only by organizer
 - multiple organizers per event
 - list public topics
 - request joining topic
 - login theme depending on goto parameter
--
 - Gravatar
 - notify about new activity (via mail)
-
-## later later
-
 - calendar integration
 - API keys
 - json export
@@ -117,6 +91,7 @@
   - sync form meetup.com
 - i18n
 - a11y
+- use router middleware to fetch topic/event
 
 ## Data Model
 

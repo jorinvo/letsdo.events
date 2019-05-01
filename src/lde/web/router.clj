@@ -11,17 +11,25 @@
             [lde.web.pages.home :as home]
             [lde.web.pages.login :as login]))
 
+(defn authorize [handler]
+  (fn [req]
+    (if (get-in req [:session :id])
+      (handler req)
+      {:status 403
+       :body "unauthorized"})))
+
 (defn routes []
   [["/css/main.css" {:get css/handler}]
    ["/" {:get home/handler}]
    ["/login" {:get login/handler
               :post login/post-login}]
-   ["/logout" {:get login/logout}]
    ["/signup" {:get login/handler
                :post login/post-signup}]
-   ["/new" {:get topic/handler
+   ["/logout" {:get login/logout}]
+   ["/new" {:middleware [authorize]
+            :get topic/handler
             :post topic/post-topic}]
-   ["/for/:topic"
+   ["/for/:topic" {:middleware [authorize]}
     ["" {:get topic/overview}]
     ["/new" {:get event/new
              :post event/post}]
@@ -50,4 +58,3 @@
                  wrap-keyword-params
                  (make-session-middleware ctx)
                  (make-context-middleware ctx)]}))
-

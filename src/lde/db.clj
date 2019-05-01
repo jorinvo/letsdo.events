@@ -52,17 +52,14 @@
   (-> (crux/entity (crux/db crux) id)
       (rename-keys {:crux.db/id :id})))
 
-(defn set-setting [{:keys [::crux]} k v]
-  (let [id (keyword "settings" (name k))]
-    (crux/submit-tx crux [[:crux.tx/put id {:crux.db/id id
-                                            :settings/value v}]])))
+(defn set-key [{:keys [::crux]} k v]
+  (crux/submit-tx crux [[:crux.tx/put k {:crux.db/id k :value v}]]))
 
-(defn get-setting [{:keys [::crux]} k]
+(defn get-key [{:keys [::crux]} k]
   (let [db (crux/db crux)
-        id (keyword "settings" (name k))
         q (crux/q db {:find '[value]
-                      :where '[[id :settings/value value]]
-                      :args [{:id id}]})]
+                      :where '[[k :value value]]
+                      :args [{:id k}]})]
     (first (first q))))
 
 (comment
