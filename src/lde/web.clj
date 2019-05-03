@@ -5,6 +5,8 @@
             [buddy.core.codecs.base64 :as base64]
             [buddy.core.codecs :refer [bytes->str str->bytes]]))
 
+(def image-mime-types #{"image/png" "image/jpeg"})
+
 (defn render [options content]
   {:status 200
    :headers {"content-type" "text/html"}

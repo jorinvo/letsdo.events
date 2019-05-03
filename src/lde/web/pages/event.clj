@@ -3,12 +3,11 @@
   (:require
     [clojure.set :refer [rename-keys]]
     [clojure.string :as str]
-    [java-time :as time]
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
     [hiccup.core :refer [h]]
-    [lde.web :refer [render escape-with-br multipart-image-to-data-uri]]
+    [lde.web :refer [render escape-with-br multipart-image-to-data-uri image-mime-types]]
     [lde.core.event :as event]
     [lde.core.interest :as interest]
     [lde.core.attendees :as attendees]
@@ -109,7 +108,7 @@
         [:label "optional: Select an image"
          [:input {:type "file"
                   :name "image"
-                  :accept ".jpg, .jpeg, .png"}]]
+                  :accept (str/join ", " image-mime-types)}]]
         [:br]
         "When "
         [:br]

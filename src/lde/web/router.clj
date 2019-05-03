@@ -1,5 +1,5 @@
 (ns lde.web.router
-  (:require [spec-tools.data-spec :as ds]
+  (:require [clojure.spec.alpha :as s]
             [reitit.ring :as ring]
             [reitit.coercion.spec :as spec-coercion]
             [reitit.ring.middleware.parameters :refer [parameters-middleware]]
@@ -11,6 +11,7 @@
             [lde.core.settings :as settings]
             [lde.core.topic :as topic]
             [lde.core.event :as event]
+            [lde.web :as web]
             [lde.web.css :as css]
             [lde.web.pages.topic :as topic-page]
             [lde.web.pages.event :as event-page]
@@ -43,6 +44,16 @@
        (or (empty? s)
            (re-matches #"^[1-9][0-9]*$" s))))
 
+(defn file-max-size [size]
+  (fn [{b :bytes}]
+    (> size (count b))))
+
+(def image
+  (s/and multipart/bytes-part
+         (file-max-size (* 5 1024 1024))
+         (s/or :empty-multipart-file (fn [{b :bytes}] (empty? b))
+               :multipart-img (fn [{t :content-type}] (contains? web/image-mime-types t)))))
+
 (defn routes []
   [["/css/main.css" {:get css/handler}]
    ["/" {:get home/handler}]
@@ -58,7 +69,7 @@
                                             :description string?
                                             :type #(contains? topic/types (keyword %))
                                             :visibility #(contains? topic/visibilities (keyword %))
-                                            :image multipart/bytes-part}}}}]
+                                            :image image}}}}]
    ["/for/:topic" {:middleware [authorize]}
     ["" {:get topic-page/overview}]
     ["/new" {:get event-page/new
@@ -72,7 +83,7 @@
                                              :end-time opt-time
                                              :max-attendees opt-str-pos-int
                                              :location string?
-                                             :image multipart/bytes-part}}}}]
+                                             :image image}}}}]
     ["/about/:event"
      ["/" {:get event-page/get}]
      ["/join" {:post event-page/join}]]]])

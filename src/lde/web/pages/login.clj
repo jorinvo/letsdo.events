@@ -65,10 +65,13 @@
        [:button.signup-button {:type "submit"} "Signup"]]])))
 
 (defn post-login [{:keys [ctx params]}]
-  (if-let [user (user/login (:email params) (:password params) ctx)]
-    (-> (response/redirect "/" :see-other)
-        (assoc :session (select-keys user [:id])))
-    (response/bad-request "Invalid login")))
+  (let [password (:password params)]
+    (if (empty? password)
+      (response/bad-request "TODO this should trigger mail login")
+      (if-let [user (user/login (:email params) password ctx)]
+       (-> (response/redirect "/" :see-other)
+           (assoc :session (select-keys user [:id])))
+       (response/bad-request "Invalid login")))))
 
 (def user-key-map {:email :user/email
                    :name :user/name

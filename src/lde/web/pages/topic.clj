@@ -2,10 +2,11 @@
   (:refer-clojure :exclude [new])
   (:require
     [clojure.set :refer [rename-keys]]
+    [clojure.string :as str]
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
-    [lde.web :refer [render escape-with-br multipart-image-to-data-uri]]
+    [lde.web :refer [render escape-with-br multipart-image-to-data-uri image-mime-types]]
     [lde.web.pages.event :refer [event-item]]
     [lde.core.topic :as topic]
     [lde.core.user :as user]
@@ -36,7 +37,7 @@
         [:label "optional: Select an image"
          [:input {:type "file"
                   :name "image"
-                  :accept ".jpg, .jpeg, .png"}]]
+                  :accept (str/join ", " image-mime-types)}]]
         [:br]
         (->> topic/visibilities
              (map (fn [[value {:keys [label]}]]

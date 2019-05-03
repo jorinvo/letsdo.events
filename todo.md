@@ -2,15 +2,13 @@
 
 ## Tech
 
-- signup via mail
-- signup email only
-- login email only
-- validate image format and size
-- generate non-conflicting slugs for topic and event
 - require & validate mail
-- check for existing email
-- signup input - remove additional fields
+- does coerion already remove additional fields?
+  - signup input - remove additional fields
 - validation for signup form
+- validation for login form
+- check for existing email
+- generate non-conflicting slugs for topic and event
 - sorting of event list
 - event listing filters
 - event list - treat your own event differently
@@ -18,15 +16,17 @@
 - Filter by organizer
 - redirect unauthorized to login with redirect URI
     letsdo.events/login?goto=heart-of-clojure/about/cljdoc-hacking
-- validation for login form
 - error page
 - undo join
 - edit only by organizer
 - delete event
+- change cookie to JWT
+  - then: login email only
 
 - allow editing slug and check for conflicts
 - image resizing
 - image preview
+- [clear image input](https://www.w3schools.com/howto/howto_html_clear_input.asp)
 - restrict images size
 
 - allow app to be running at sub-route instead of top level
