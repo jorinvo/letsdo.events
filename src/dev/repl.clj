@@ -79,7 +79,7 @@
   (start))
 
 (defn -main []
-  (cider/init))
+  (cider/init ['cider.nrepl/cider-middleware]))
 
 (comment
 

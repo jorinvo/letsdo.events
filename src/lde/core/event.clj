@@ -20,4 +20,3 @@
 (defn list-by-topic [topic-id ctx]
   (db/list-by-attribute ctx :event/topic topic-id))
 
-

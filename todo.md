@@ -2,12 +2,9 @@
 
 ## Tech
 
-- require & validate mail
+- check for existing email
 - does coerion already remove additional fields?
   - signup input - remove additional fields
-- validation for signup form
-- validation for login form
-- check for existing email
 - generate non-conflicting slugs for topic and event
 - sorting of event list
 - event listing filters

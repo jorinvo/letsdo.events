@@ -1,4 +1,5 @@
 {:deps {org.clojure/clojure {:mvn/version "1.10.0"}
+        org.clojure/test.check {:mvn/version "0.10.0-alpha4"}
         aleph {:mvn/version "0.4.6"}
         buddy/buddy {:mvn/version "2.0.0"}
         hiccup {:mvn/version "1.0.5"}

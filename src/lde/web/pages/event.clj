@@ -19,10 +19,7 @@
         event-url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
         join-url (str event-url "/join")
         attendees (attendees/count-by-event-id ctx (:id event))
-        max-attendees (let [m (:event/max-attendees event)]
-                        (if (empty? m)
-                          nil
-                          (Integer/parseInt m)))]
+        max-attendees (:event/max-attendees event)]
     [:div
      (when-let [image (:event/image event)]
                [:img {:src image
@@ -168,6 +165,9 @@
                   (assoc :event/creator user-id
                          :event/organizer organizer
                          :event/topic (:id topic))
+                  (update :event/max-attendees #(if (empty? %)
+                                                  nil
+                                                  (Integer/parseInt %)))
                   (update :event/image multipart-image-to-data-uri)
                   (event/create ctx))
         url (str "/for/" topic-slug "/about/" (:event/slug event))]
@@ -182,7 +182,7 @@
         url (str "/for/" topic-slug "/about/" (:event/slug event))
         attendees-count (attendees/count-by-event-id ctx (:id event))
         max-attendees (:event/max-attendees event)]
-    (if (and max-attendees (>= attendees-count  max-attendees))
+    (if (and max-attendees (< attendees-count max-attendees))
       (do (attendees/add ctx (:id event) user-id)
           (response/redirect url :see-other))
       (response/bad-request "event full"))))

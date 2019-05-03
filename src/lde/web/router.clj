@@ -1,7 +1,10 @@
 (ns lde.web.router
-  (:require [clojure.spec.alpha :as s]
+  (:require [clojure.string :as str]
+            [clojure.spec.alpha :as s]
+            [clojure.test.check.generators :as gen]
             [reitit.ring :as ring]
             [reitit.coercion.spec :as spec-coercion]
+            [reitit.ring.coercion :as ring-coericion]
             [reitit.ring.middleware.parameters :refer [parameters-middleware]]
             [reitit.ring.middleware.multipart :as multipart]
             [ring.middleware.multipart-params.byte-array :refer [byte-array-store]]
@@ -16,7 +19,8 @@
             [lde.web.pages.topic :as topic-page]
             [lde.web.pages.event :as event-page]
             [lde.web.pages.home :as home]
-            [lde.web.pages.login :as login]))
+            [lde.web.pages.login :as login])
+  (:import [java.util.regex Pattern]))
 
 (defn authorize [handler]
   (fn [req]
@@ -39,28 +43,107 @@
        (or (empty? s)
            (re-matches #"^\d{2}:\d{2}$" s))))
 
-(defn opt-str-pos-int [s]
-  (and (string? s)
-       (or (empty? s)
-           (re-matches #"^[1-9][0-9]*$" s))))
+(s/def ::max-attendees
+  (s/and string?
+         (s/or :empty empty?
+               :number #(re-matches #"^[1-9][0-9]*$" %))))
 
 (defn file-max-size [size]
   (fn [{b :bytes}]
     (> size (count b))))
 
-(def image
+(s/def ::image
   (s/and multipart/bytes-part
          (file-max-size (* 5 1024 1024))
          (s/or :empty-multipart-file (fn [{b :bytes}] (empty? b))
                :multipart-img (fn [{t :content-type}] (contains? web/image-mime-types t)))))
 
+; email stuff adopted from: https://github.com/SparkFund/useful-specs/blob/master/src/specs/internet.clj
+(s/def ::hostpart
+  (letfn [(pred [s]
+            (re-matches #"\A(?:\p{Alnum}|\p{Alnum}(?:\p{Alnum}|-)*\p{Alnum})\z" s))
+          (gen []
+            (let [middle-char (gen/fmap char
+                                        (gen/one-of [(gen/choose 48 57)
+                                                     (gen/choose 65 90)
+                                                     (gen/choose 97 122)
+                                                     (gen/return 45)]))]
+              (gen/let [length (gen/choose 1 64)]
+                (let [chars-gen (if (= 1 length)
+                                  (gen/vector gen/char-alphanumeric 1)
+                                  (gen/let [first-char gen/char-alphanumeric
+                                            last-char gen/char-alphanumeric
+                                            middle-chars (gen/vector middle-char
+                                                                     (- length 2))]
+                                    (gen/return (-> [first-char]
+                                                    (into middle-chars)
+                                                    (conj last-char)))))]
+                  (gen/fmap str/join chars-gen)))))]
+    (s/spec pred :gen gen)))
+
+(s/def ::hostname
+  (let [hostpart-spec (s/get-spec ::hostpart)]
+    (letfn [(pred [s]
+              (and (>= 253 (count s))
+                   (let [parts (str/split s #"\.")]
+                     (and (not (str/starts-with? s "."))
+                          (not (str/ends-with? s "."))
+                          (every? (partial s/valid? hostpart-spec) parts)))))
+            (gen []
+              (let [min-needed 2
+                    max-needed 4]
+                (let [parts-gen (gen/vector (s/gen hostpart-spec)
+                                            min-needed max-needed)]
+                  (gen/fmap (partial str/join ".") parts-gen))))]
+      (s/spec pred :gen gen))))
+
+(s/def ::local-email-part
+  (let [chars (set (str "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                        "abcdefghijklmnopqrstuvwxyz"
+                        "0123456789"
+                        "!#$%&'*+-/=?^_`{|}~"))
+        dot-chars (conj chars \.)]
+    (letfn [(pred [s]
+              (and (>= 64 (count s) 1)
+                   (not (str/starts-with? s "."))
+                   (not (str/ends-with? s "."))
+                   (every? dot-chars s)
+                   (not (re-find #"\.\." s))))
+            (gen []
+              (gen/fmap str/join (gen/vector (gen/elements chars) 1 64)))]
+      (s/spec pred :gen gen))))
+
+(s/def ::email
+  (s/spec (fn [s]
+              (let [parts (str/split s #"@")]
+                (and (= 2 (count parts))
+                     (s/valid? ::local-email-part (first parts))
+                     (s/valid? ::hostname (second parts)))))
+        :gen (fn []
+              (gen/let [local-part (s/gen ::local-email-part)
+                        hostname-part (s/gen ::hostname)]
+                (gen/return (str local-part "@" hostname-part))))))
+
+(s/def ::name string?)
+(s/def ::link string?)
+(s/def ::password
+  (s/and string? #(<= 8 (count %))))
+
+(s/def ::login-form
+  (s/keys :req-un [::email ::password]))
+
+(s/def ::signup-form
+  (s/keys :req-un [::name ::email ::password ::link]))
+
 (defn routes []
   [["/css/main.css" {:get css/handler}]
    ["/" {:get home/handler}]
    ["/login" {:get login/handler
-              :post login/post-login}]
+              :post {:handler login/post-login
+                     :parameters {:form ::login-form}}}]
    ["/signup" {:get login/handler
-               :post login/post-signup}]
+               :post {:handler login/post-signup
+                      :parameters {:form ::signup-form}}}]
    ["/logout" {:get login/logout}]
    ["/new" {:middleware [authorize]
             :get topic-page/new
@@ -69,7 +152,7 @@
                                             :description string?
                                             :type #(contains? topic/types (keyword %))
                                             :visibility #(contains? topic/visibilities (keyword %))
-                                            :image image}}}}]
+                                            :image ::image}}}}]
    ["/for/:topic" {:middleware [authorize]}
     ["" {:get topic-page/overview}]
     ["/new" {:get event-page/new
@@ -81,9 +164,9 @@
                                              :end-date opt-date
                                              :start-time opt-time
                                              :end-time opt-time
-                                             :max-attendees opt-str-pos-int
+                                             :max-attendees ::max-attendees
                                              :location string?
-                                             :image image}}}}]
+                                             :image ::image}}}}]
     ["/about/:event"
      ["/" {:get event-page/get}]
      ["/join" {:post event-page/join}]]]])
@@ -104,7 +187,10 @@
     (ring/router
       (routes)
       {:data {:coercion spec-coercion/coercion
-              :middleware [(multipart/create-multipart-middleware {:store (byte-array-store)})]}})
+              :middleware [ring-coericion/coerce-exceptions-middleware
+                           ring-coericion/coerce-request-middleware
+                           ring-coericion/coerce-response-middleware
+                           (multipart/create-multipart-middleware {:store (byte-array-store)})]}})
     (ring/routes
       (ring/redirect-trailing-slash-handler)
       (ring/create-default-handler))
