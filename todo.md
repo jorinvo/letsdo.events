@@ -2,10 +2,6 @@
 
 ## Tech
 
-- check for existing email
-- does coerion already remove additional fields?
-  - signup input - remove additional fields
-- generate non-conflicting slugs for topic and event
 - sorting of event list
 - event listing filters
 - event list - treat your own event differently
@@ -15,16 +11,20 @@
     letsdo.events/login?goto=heart-of-clojure/about/cljdoc-hacking
 - error page
 - undo join
-- edit only by organizer
 - delete event
 - change cookie to JWT
   - then: login email only
+- save type with each document
+- helper to delete all data of a kind
 
+- topic edit view (use CAS transaction for editing)
+  - only by admin
+- event edit view
 - allow editing slug and check for conflicts
+- edit only by organizer
 - image resizing
 - image preview
 - [clear image input](https://www.w3schools.com/howto/howto_html_clear_input.asp)
-- restrict images size
 
 - allow app to be running at sub-route instead of top level
 - catch errors and never show to client
@@ -34,7 +34,8 @@
 - production router
 - production build
 - nice error/spec messages for dev
-- event edit view
+- repair on read: when reading things that are supposed to be unique but are not, throw away invalid ones
+  - read user by email: throw away all but the first in time if there is more than one
 
 - topic settings page
 - list all your topics

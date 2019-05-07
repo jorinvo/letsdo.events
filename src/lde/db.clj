@@ -48,6 +48,12 @@
 (defn count-by-attribute [ctx attr value]
   (count-by-attributes ctx {attr value}))
 
+(defn exists-by-attributes [ctx attrs]
+  (< 0 (count-by-attributes ctx attrs)))
+
+(defn exists-by-attribute [ctx attr value]
+  (exists-by-attributes ctx {attr value}))
+
 (defn get-by-id [{:keys [::crux]} id]
   (-> (crux/entity (crux/db crux) id)
       (rename-keys {:crux.db/id :id})))

@@ -9,9 +9,19 @@
                   :interest
                   {:text "This is only somthing I'm interested in"}))
 
+(defn unique-slug [event ctx]
+  (let [base (cuerdas/slug (:event/name event))]
+    (if (db/exists-by-attribute ctx :event/slug base)
+      (loop [n 2]
+        (let [slug (str base "-" n)]
+          (if (db/exists-by-attribute ctx :event/slug slug)
+            (recur (inc n))
+            slug)))
+      base)))
+
 (defn create [event ctx]
   (-> event
-      (assoc :event/slug (cuerdas/slug (:event/name event)))
+      (assoc :event/slug (unique-slug event ctx))
       (db/save ctx)))
 
 (defn get-by-slug [slug ctx]

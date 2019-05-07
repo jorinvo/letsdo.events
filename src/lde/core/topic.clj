@@ -28,9 +28,19 @@
 (defn singular [topic]
   (-> topic :topic/type types :singular))
 
+(defn unique-slug [topic ctx]
+  (let [base (cuerdas/slug (:topic/name topic))]
+    (if (db/exists-by-attribute ctx :topic/slug base)
+      (loop [n 2]
+        (let [slug (str base "-" n)]
+          (if (db/exists-by-attribute ctx :topic/slug slug)
+            (recur (inc n))
+            slug)))
+      base)))
+
 (defn create [topic ctx]
   (-> topic
-      (assoc :topic/slug (cuerdas/slug (:topic/name topic)))
+      (assoc :topic/slug (unique-slug topic ctx))
       (db/save ctx)))
 
 (defn get-by-slug [slug ctx]

@@ -80,6 +80,7 @@
 
 (defn post-signup [{:keys [ctx params]}]
   (let [user (-> params
+                 (select-keys (keys user-key-map))
                  (rename-keys user-key-map)
                  (user/create ctx))]
     (condp = user
