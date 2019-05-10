@@ -2,15 +2,14 @@
 
 ## Tech
 
+- db/set-key can also be an update
+- event list - treat your own event differently
 - sorting of event list
 - event listing filters
-- event list - treat your own event differently
 - event listing search
-- Filter by organizer
 - redirect unauthorized to login with redirect URI
     letsdo.events/login?goto=heart-of-clojure/about/cljdoc-hacking
 - error page
-- undo join
 - delete event
 - change cookie to JWT
   - then: login email only
@@ -85,6 +84,9 @@
 - suggest activity/talk/thing
 - event interest
 - schedule/commit
+
+- Filter by organizer
+- confirm() before unjoin
 
 - setup possible dates
 

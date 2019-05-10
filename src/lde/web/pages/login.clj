@@ -85,7 +85,6 @@
                  (user/create ctx))]
     (condp = user
       :duplicate-email (response/bad-request "Email already taken")
-      :no-password (response/bad-request "Email already taken")
       (-> (response/redirect "/" :see-other)
           (assoc :session (select-keys user [:id]))))))
 

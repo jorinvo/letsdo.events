@@ -17,9 +17,9 @@
 (defn event-item [event topic user ctx]
   (let [title (:event/name event)
         event-url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
-        join-url (str event-url "/join")
         attendees (attendees/count-by-event-id ctx (:id event))
-        max-attendees (:event/max-attendees event)]
+        max-attendees (:event/max-attendees event)
+        user-joined (attendees/get ctx (:id event) (:id user))]
     [:div
      (when-let [image (:event/image event)]
                [:img {:src image
@@ -40,12 +40,15 @@
        (str "/" max-attendees " " (if (= max-attendees 1) "attendee" "attendees"))
        (if (= attendees 1) " attendee" " attendees"))
      (cond
-       (attendees/get ctx (:id event) (:id user))
-       [:span " - including you!"]
+       user-joined
+       [:div
+        [:span " - including you!"]
+        [:form {:action (str event-url "/leave") :method "post"}
+         [:button {:type "submit"} "Leave " (topic/singular topic)]]]
        (and max-attendees (>= attendees max-attendees))
        [:span " No spot left!"]
        :else
-       [:form {:action join-url :method "post"}
+       [:form {:action (str event-url "/join") :method "post"}
         [:button {:type "submit"} "Join " (topic/singular topic)]])]))
 
 (defn get [{:keys [ctx path-params session]}]
@@ -182,7 +185,13 @@
         url (str "/for/" topic-slug "/about/" (:event/slug event))
         attendees-count (attendees/count-by-event-id ctx (:id event))
         max-attendees (:event/max-attendees event)]
-    (if (and max-attendees (< attendees-count max-attendees))
+    (if (or (not max-attendees) (< attendees-count max-attendees))
       (do (attendees/add ctx (:id event) user-id)
           (response/redirect url :see-other))
       (response/bad-request "event full"))))
+
+(defn leave [{:keys [ctx path-params session]}]
+  (let [event (event/get-by-slug (:event path-params) ctx)
+        url (str "/for/" (:topic path-params))]
+    (attendees/remove ctx (:id event) (:id session))
+    (response/redirect url :see-other)))

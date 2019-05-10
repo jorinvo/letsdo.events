@@ -68,6 +68,15 @@
                       :args [{:id k}]})]
     (first (first q))))
 
+(defn delete-by-attributes [{:keys [::crux]} attrs]
+  (->> (crux/q (crux/db crux)
+               {:find '[id]
+                :where (mapv (fn [[attr value]]
+                               ['id attr value]) attrs)})
+       (map first)
+       (mapv #(vector :crux.tx/delete %))
+       (crux/submit-tx crux)))
+
 (comment
 
   (.close (::crux ctx))

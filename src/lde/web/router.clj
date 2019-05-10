@@ -169,7 +169,8 @@
                                              :image ::image}}}}]
     ["/about/:event"
      ["/" {:get event-page/get}]
-     ["/join" {:post event-page/join}]]]])
+     ["/join" {:post event-page/join}]
+     ["/leave" {:post event-page/leave}]]]])
 
 (defn make-context-middleware [ctx]
   (fn [handler]
