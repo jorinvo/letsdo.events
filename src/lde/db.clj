@@ -1,8 +1,11 @@
 (ns lde.db
   (:require [clojure.set :refer [rename-keys]]
-            [crux.api :as crux])
+            [crux.api :as crux]
+            [crux.decorators.aggregation.alpha :as aggr])
   (:import [java.util UUID]
            [crux.api ICruxAPI]))
+
+(defn id [] (UUID/randomUUID))
 
 (defn init
   ([path]
@@ -12,14 +15,23 @@
                      {:kv-backend "crux.kv.rocksdb.RocksKv"
                       :db-dir path}))))
 
+(defn q [{:keys [::crux]} query]
+  (crux/q (crux/db crux) query))
+
 (defn close [{:keys [::crux]}]
   (.close crux))
 
-(defn save [data {:keys [::crux]}]
-  (let [id (UUID/randomUUID)
-        op [:crux.tx/put id (assoc data :crux.db/id id)]]
-    (crux/submit-tx crux [op])
-    (assoc data :id id)))
+(defn save-multi [{:keys [::crux]} data-list]
+  (->> data-list
+       (mapv #(vector :crux.tx/put
+                      (:id %)
+                      (rename-keys % {:id :crux.db/id})))
+       (crux/submit-tx crux))
+  data-list)
+
+(defn save [data ctx]
+  (let [with-id (assoc data :id (id))]
+    (first (save-multi ctx [with-id]))))
 
 (defn list-by-attributes [{:keys [::crux]} attrs]
   (let [db (crux/db crux)]
@@ -40,10 +52,13 @@
   (first (list-by-attribute ctx attr value)))
 
 (defn count-by-attributes [{:keys [::crux]} attrs]
-  (->> (crux/q (crux/db crux) {:find '[id]
-                               :where (mapv (fn [[attr value]]
-                                              ['id attr value]) attrs)})
-       count))
+  (-> (crux/db crux)
+      (aggr/q {:aggr '{:partition-by []
+                        :select {?count [0 (inc acc) ?id]}}
+                :where (mapv (fn [[attr value]]
+                               ['?id attr value]) attrs)})
+       first
+       (get :count 0)))
 
 (defn count-by-attribute [ctx attr value]
   (count-by-attributes ctx {attr value}))
@@ -55,8 +70,8 @@
   (exists-by-attributes ctx {attr value}))
 
 (defn get-by-id [{:keys [::crux]} id]
-  (-> (crux/entity (crux/db crux) id)
-      (rename-keys {:crux.db/id :id})))
+  (rename-keys (crux/entity (crux/db crux) id)
+               {:crux.db/id :id}))
 
 (defn set-key [{:keys [::crux]} k v]
   (crux/submit-tx crux [[:crux.tx/put k {:crux.db/id k :value v}]]))

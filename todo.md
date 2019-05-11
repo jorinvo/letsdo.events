@@ -2,8 +2,7 @@
 
 ## Tech
 
-- db/set-key can also be an update
-- event list - treat your own event differently
+- redirect empty /for and /about one up
 - sorting of event list
 - event listing filters
 - event listing search

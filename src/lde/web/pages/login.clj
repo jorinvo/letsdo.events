@@ -1,6 +1,5 @@
 (ns lde.web.pages.login
   (:require
-    [clojure.set :refer [rename-keys]]
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
@@ -68,21 +67,13 @@
   (let [password (:password params)]
     (if (empty? password)
       (response/bad-request "TODO this should trigger mail login")
-      (if-let [user (user/login (:email params) password ctx)]
+      (if-let [user (user/login ctx (:email params) password)]
        (-> (response/redirect "/" :see-other)
            (assoc :session (select-keys user [:id])))
        (response/bad-request "Invalid login")))))
 
-(def user-key-map {:email :user/email
-                   :name :user/name
-                   :link :user/link
-                   :password :user/password})
-
 (defn post-signup [{:keys [ctx params]}]
-  (let [user (-> params
-                 (select-keys (keys user-key-map))
-                 (rename-keys user-key-map)
-                 (user/create ctx))]
+  (let [user (user/create params ctx)]
     (condp = user
       :duplicate-email (response/bad-request "Email already taken")
       (-> (response/redirect "/" :see-other)

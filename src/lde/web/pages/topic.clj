@@ -1,7 +1,6 @@
 (ns lde.web.pages.topic
   (:refer-clojure :exclude [new])
   (:require
-    [clojure.set :refer [rename-keys]]
     [clojure.string :as str]
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
@@ -62,20 +61,10 @@
         " "
         [:a {:href "/"} "Cancel"]]])))
 
-(def topic-keys {:name :topic/name
-                 :type :topic/type
-                 :visibility :topic/visibility
-                 :description :topic/description
-                 :image :topic/image})
-
 (defn post [{:keys [ctx session parameters]}]
   (let [topic (-> (:multipart parameters)
-                  (select-keys (keys topic-keys))
-                  (rename-keys topic-keys)
-                  (assoc :topic/creator (:id session))
-                  (update :topic/visibility keyword)
-                  (update :topic/type keyword)
-                  (update :topic/image multipart-image-to-data-uri)
+                  (assoc :creator (:id session))
+                  (update :image multipart-image-to-data-uri)
                   (topic/create ctx))]
     (response/redirect (str "/for/" (:topic/slug topic)) :see-other)))
 

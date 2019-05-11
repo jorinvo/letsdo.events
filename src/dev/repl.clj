@@ -2,6 +2,8 @@
   (:require
     [clojure.string :as str]
     [clojure.repl]
+    [crux.api :as crux]
+    [crux.decorators.aggregation.alpha :as aggr]
     [cider-nrepl.main :as cider]
     [aleph.http :as http]
     [byte-streams :as bs]
@@ -114,5 +116,59 @@
       bs/to-string)
 
   (db/get-by-attribute @ctx :topic/slug "hi")
+
+(crux/q (crux/db (:lde.db/crux @ctx))
+        {:find '[n un]
+         :where '[[e :event/topic t]
+                  [e :event/name n]
+                  [o :organizer/event e]
+                  [o :organizer/user u]
+                  [u :user/name un]]
+         :args [{'t #uuid "a249f31c-b644-43c1-8fa9-15d9fddb8935"}]})
+
+(aggr/q (crux/db (:lde.db/crux @ctx))
+        {:find [?id]
+         :where '[[topic-id :topic/slug topic-slug]
+                  [?id :event/topic topic-id]
+                  [?id :event/slug event-slug]]
+         :args [{'event-slug "hi"
+                 'topic-slug "ho-2"}]})
+
+(db/count-by-attribute @ctx :attendee/event #uuid "e1d83332-d2f2-41db-9783-34c0c311d53")
+
+(aggr/q (crux/db (:lde.db/crux @ctx))
+        {:aggr '{:partition-by []
+                 :select {?count [0 (inc acc) ?attendee]}}
+         :where [['?attendee :attendee/event #uuid "e1d83332-d2f2-41db-9783-34c0c311d53b"]]})
+
+(aggr/q (crux/db (:lde.db/crux @ctx))
+        {:aggr '{:partition-by [?id]
+                :select {?attendee-count [0 (inc acc) ?attendee]}}
+         :where '[[?id :event/slug ?slug]
+                 [?attendee :attendee/event ?id]]
+         :args [{'?slug "hi"}]})
+
+(aggr/q (crux/db (:lde.db/crux @ctx))
+        {:aggr '{:partition-by [?id ?t]
+                :select {?attendee-count [0 (inc acc) ?attendee]}}
+         :where '[[?id :event/slug ?slug]
+                 [?attendee :attendee/event ?id]
+                 [?id :event/topic ?x]
+                 [?x :topic/name ?t]]
+         :args [{'?slug "hi"}]})
+
+(aggr/q (crux/db (:lde.db/crux @ctx))
+        '{:aggr {:partition-by [?tn]
+                :select {?ec [0 (inc acc) ?e]}}
+         :where [[?t :topic/name ?tn]
+                  [?e :event/topic ?t]]})
+
+(crux/q (crux/db (:lde.db/crux @ctx))
+        {:find ['?id]
+            :where '[[topic-id :topic/slug topic-slug]
+                     [?id :event/topic topic-id]
+                     [?id :event/slug event-slug]]
+            :args {'event-slug "a-is-fun-2"
+                   'topic-slug "ho-2"}})
 
 )

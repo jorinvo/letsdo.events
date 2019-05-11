@@ -1,5 +1,6 @@
 (ns lde.core.topic
   (:require
+    [clojure.set :refer [rename-keys]]
     [cuerdas.core :as cuerdas]
     [lde.db :as db]))
 
@@ -28,8 +29,8 @@
 (defn singular [topic]
   (-> topic :topic/type types :singular))
 
-(defn unique-slug [topic ctx]
-  (let [base (cuerdas/slug (:topic/name topic))]
+(defn unique-slug [topic-name ctx]
+  (let [base (cuerdas/slug topic-name)]
     (if (db/exists-by-attribute ctx :topic/slug base)
       (loop [n 2]
         (let [slug (str base "-" n)]
@@ -38,9 +39,20 @@
             slug)))
       base)))
 
-(defn create [topic ctx]
-  (-> topic
-      (assoc :topic/slug (unique-slug topic ctx))
+(def topic-keys {:name :topic/name
+                 :creator :topic/creator
+                 :type :topic/type
+                 :visibility :topic/visibility
+                 :description :topic/description
+                 :image :topic/image})
+
+(defn create [data ctx]
+  (-> data
+      (select-keys (keys topic-keys))
+      (rename-keys topic-keys)
+      (update :topic/visibility keyword)
+      (update :topic/type keyword)
+      (assoc :topic/slug (unique-slug (:name data) ctx))
       (db/save ctx)))
 
 (defn get-by-slug [slug ctx]
