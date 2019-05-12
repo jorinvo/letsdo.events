@@ -127,7 +127,8 @@
 (s/def ::name string?)
 (s/def ::link string?)
 (s/def ::password
-  (s/and string? #(<= 8 (count %))))
+  (s/and string? (s/or :empty empty?
+                       :strong-enough #(<= 8 (count %)))))
 
 (s/def ::login-form
   (s/keys :req-un [::email ::password]))
@@ -135,12 +136,21 @@
 (s/def ::signup-form
   (s/keys :req-un [::name ::email ::password ::link]))
 
+(s/def ::token string?)
+
+(s/def ::login-query
+  (s/keys :req-un [::token]))
+
 (defn routes []
   [["/css/main.css" {:get css/handler}]
    ["/" {:get home/handler}]
-   ["/login" {:get login/handler
+   ["/login"
+    ["" {:get login/handler
               :post {:handler login/post-login
                      :parameters {:form ::login-form}}}]
+    ["/mail" {:get {:handler login/mail
+               :parameters {:query ::login-query}}}]
+    ["/mail-confirm" {:get login/mail-confirm}]]
    ["/signup" {:get login/handler
                :post {:handler login/post-signup
                       :parameters {:form ::signup-form}}}]
@@ -168,7 +178,7 @@
                                              :location string?
                                              :image ::image}}}}]
     ["/about/:event"
-     ["/" {:get event-page/get}]
+     ["" {:get event-page/get}]
      ["/join" {:post event-page/join}]
      ["/leave" {:post event-page/leave}]]]])
 

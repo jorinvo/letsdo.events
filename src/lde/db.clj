@@ -79,8 +79,8 @@
 (defn get-key [{:keys [::crux]} k]
   (let [db (crux/db crux)
         q (crux/q db {:find '[value]
-                      :where '[[k :value value]]
-                      :args [{:id k}]})]
+                      :where '[[id :value value]]
+                      :args [{'id k}]})]
     (first (first q))))
 
 (defn delete-by-attributes [{:keys [::crux]} attrs]
@@ -97,9 +97,6 @@
   (.close (::crux ctx))
 
   (def ctx (init "db"))
-
-  (set-setting ctx :cookie-secret "aaa")
-  (get-setting ctx :cookie-secret)
 
   (save ctx {:email "abCd@de.com"})
   (< 0 (count (find-by-email ctx "hi@jorin.me")))

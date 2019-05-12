@@ -22,51 +22,52 @@
 
 (defn handler [req]
   (let [path (-> req get-match match->path)]
-    (render
-     {:title "Login"
-      :description "Hi"}
-     [:div#login-container {:class (subs path 1)}
-      [:h1.f1
-       [:a.login-heading
-        {:href "/login"
-         :onClick login-click}
-        "Login"]
-       " | "
-       [:a.signup-heading
-        {:href "/signup"
-         :onClick signup-click}
-        "Signup"]]
-      [:form {:action path :method "post"}
-       [:label.name-field "Name: "
-        [:input {:type "text"
-                 :name "name"
-                 :placeholder "Name"}]]
-       [:br]
-       [:label "Email: "
-        [:input {:type "email"
-                 :name "email"
-                 :required true
-                 :placeholder "Email"}]]
-       [:br]
-       [:label [:i "Optionally"] " password: "
-        [:input {:type "password"
-                 :name "password"
-                 :placeholder "Password"}]]
-       [:br]
-       [:small "No need to set a password, we will send you a mail"]
-       [:br]
-       [:label.link-field [:i "Optionally"] " link to your website/social media/...: "
-        [:input {:type "text"
-                 :name "link"
-                 :placeholder "Link"}]]
-       [:br]
-       [:button.login-button {:type "submit"} "Login"]
-       [:button.signup-button {:type "submit"} "Signup"]]])))
+      (render
+        {:title "Login"
+         :description "Hi"}
+        [:div#login-container {:class (subs path 1)}
+         [:h1.f1
+          [:a.login-heading
+           {:href "/login"
+            :onClick login-click}
+           "Login"]
+          " | "
+          [:a.signup-heading
+           {:href "/signup"
+            :onClick signup-click}
+           "Signup"]]
+         [:form {:action path :method "post"}
+          [:label.name-field "Name: "
+           [:input {:type "text"
+                    :name "name"
+                    :placeholder "Name"}]]
+          [:br]
+          [:label "Email: "
+           [:input {:type "email"
+                    :name "email"
+                    :required true
+                    :placeholder "Email"}]]
+          [:br]
+          [:label [:i "Optionally"] " password: "
+           [:input {:type "password"
+                    :name "password"
+                    :placeholder "Password"}]]
+          [:br]
+          [:small "No need to set a password, we will send you a mail"]
+          [:br]
+          [:label.link-field [:i "Optionally"] " link to your website/social media/...: "
+           [:input {:type "text"
+                    :name "link"
+                    :placeholder "Link"}]]
+          [:br]
+          [:button.login-button {:type "submit"} "Login"]
+          [:button.signup-button {:type "submit"} "Signup"]]])))
 
 (defn post-login [{:keys [ctx params]}]
   (let [password (:password params)]
     (if (empty? password)
-      (response/bad-request "TODO this should trigger mail login")
+      (do (user/send-login-mail ctx (:email params))
+          (response/redirect "/login/mail-confirm" :see-other))
       (if-let [user (user/login ctx (:email params) password)]
        (-> (response/redirect "/" :see-other)
            (assoc :session (select-keys user [:id])))
@@ -82,3 +83,18 @@
 (defn logout [req]
   (-> (response/redirect "/" :see-other)
       (assoc :session nil)))
+
+(defn mail [{:keys [ctx parameters]}]
+  (if-let [token (-> parameters :query :token)]
+    (if-let [user (user/login-with-token ctx token)]
+       (-> (response/redirect "/" :see-other)
+             (assoc :session (select-keys user [:id])))
+       (response/bad-request "Invalid token"))
+    (response/bad-request "No token")))
+
+(defn mail-confirm [req]
+  (render
+    {:title "Login link sent"
+     :description "Hi"}
+    [:div
+     [:p "We sent you a login link. Please check your mails."]]))

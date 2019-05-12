@@ -171,4 +171,11 @@
             :args {'event-slug "a-is-fun-2"
                    'topic-slug "ho-2"}})
 
+(user/create {:email "ho@jorin.me"} @ctx)
+
+(user/login-with-token @ctx
+                       (user/get-token-for-mail @ctx "hi@jorin.me"))
+
+(settings/get-jwt-secret @ctx)
+
 )
