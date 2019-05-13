@@ -165,6 +165,13 @@
                                             :image ::image}}}}]
    ["/for/:topic" {:middleware [authorize]}
     ["" {:get topic-page/overview}]
+    ["/edit" {:get topic-page/edit
+              :post {:handler topic-page/post-edit
+                     :parameters {:multipart {:name req-str
+                                              :description string?
+                                              :type #(contains? topic/types (keyword %))
+                                              :visibility #(contains? topic/visibilities (keyword %))
+                                              :image ::image}}}}]
     ["/new" {:get event-page/new
              :post {:handler event-page/post
                     :parameters {:multipart {:name req-str
@@ -189,6 +196,7 @@
                                                :max-attendees ::max-attendees
                                                :location string?
                                                :image ::image}}}}]
+     ["/organize" {:post event-page/organize}]
      ["/join" {:post event-page/join}]
      ["/leave" {:post event-page/leave}]]]])
 

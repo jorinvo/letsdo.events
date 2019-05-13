@@ -2,20 +2,12 @@
 
 ## Tech
 
-- keep image on event update
-- save images separately
-  - image id should be md5 hash of content
-
-- allow to take over event
-
-- event edit view
-  - show that you are organzing / creator
-  - allow editing organizers
+- event/topic edit views
   - display image
   - allow image upload
-
-- topic edit view
-  - only by admin
+  - keep image on update
+  - save images separately
+    - image id should be md5 hash of content
 
 - list view: no join for events you organize or when there is no organizer yet
 
@@ -50,6 +42,8 @@
 - nice error/spec messages for dev
 - repair on read: when reading things that are supposed to be unique but are not, throw away invalid ones
   - read user by email: throw away all but the first in time if there is more than one
+
+- allow adding and removing organizers
 
 - list all your topics
 - list users by topic
@@ -88,6 +82,8 @@
 - stats
 - [prevent redirect attacks](https://rundis.github.io/blog/2015/buddy_auth_part2.html)
 - monitoring/error tracking
+
+- handle multiple anonymous organizers
 
 - request joining topic
 - anyone can join/invite only

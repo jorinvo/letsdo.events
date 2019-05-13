@@ -23,9 +23,11 @@
                       :alt "event image"}])
      [:a {:href event-url}
       [:h3 (h title)]]
-     (if-let [{organizer :user/name} (user/get-by-id ctx (:event/organizer event))]
-       (str " by " (if (empty? organizer) "Anonymous" organizer))
-       "there is no organizer yet! can you take over? < take over >")
+     (if-let [organizer-names (event/get-organizer-names-by-event-id ctx (:id event))]
+       (str " by " (str/join ", " (map #(if (empty? %) "Anonymous" %) organizer-names)))
+       [:div "there is no organizer yet! can you take over?"
+        [:form {:action (str event-url "/organize") :method "post"}
+        [:button {:type "submit"} "Organize " (topic/singular topic)]]])
      [:div
       "starting " (:event/start-date event) " at " (:event/start-time event)
       ", until " (:event/end-date event) " at " (:event/end-time event)]
@@ -54,6 +56,11 @@
   (let [path (str "/for/" (:topic/slug topic) "/about/" (:event/slug event) "/edit")
         attendees (:event/attendee-count event)]
     [:div
+     [:i "You "
+      (if (event/organizer? ctx (:id event) (:id user))
+                   "are organizing"
+                   "created")
+      " this " (str/lower-case (topic/singular topic)) "!"]
      [:form {:action path
              :method "post"
              :enctype "multipart/form-data"}
@@ -245,6 +252,14 @@
                   (event/update event-id ctx))
         url (str "/for/" topic-slug "/about/" (:event/slug event))]
     (response/redirect url :see-other)))
+
+(defn organize [{:keys [ctx path-params session]}]
+  (let [event-id (event/get-id-from-slugs ctx path-params)
+        user-id (:id session)
+        url (str "/for/" (:topic path-params) "/about/" (:event path-params))]
+    (case (event/organize ctx event-id user-id)
+      :already-organizer (response/bad-request "you are already organizing this event!")
+      (response/redirect url :see-other))))
 
 (defn join [{:keys [ctx path-params session]}]
   (let [event-id (event/get-id-from-slugs ctx path-params)

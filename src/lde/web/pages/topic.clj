@@ -2,11 +2,11 @@
   (:refer-clojure :exclude [new])
   (:require
     [clojure.string :as str]
+    [hiccup.core :refer [h]]
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
     [lde.web :refer [render escape-with-br multipart-image-to-data-uri image-mime-types]]
-    [lde.web.pages.event :refer [event-item]]
     [lde.core.topic :as topic]
     [lde.core.user :as user]
     [lde.core.event :as event]))
@@ -61,11 +61,73 @@
         " "
         [:a {:href "/"} "Cancel"]]])))
 
+(defn edit [{:keys [path-params ctx]}]
+  (let [topic-slug (:topic path-params)
+        topic (topic/get-by-slug topic-slug ctx)]
+    (render
+      {:title "Edit Topic"
+       :description "Hi"}
+      [:div
+       [:h1
+        "Edit topic"]
+       [:form {:action (str "/for/" topic-slug "/edit")
+               :method "post"
+               :enctype "multipart/form-data"}
+        [:label "Topic name: "
+         [:input {:type "text"
+                  :name "name"
+                  :value (:topic/name topic)
+                  :required true
+                  :placeholder "Topic name"}]]
+        [:br]
+        [:label "Description: "
+         [:input {:type "text"
+                  :name "description"
+                  :value (:topic/description topic)
+                  :placeholder "Description"}]]
+        [:br]
+        [:label "optional: Select an image"
+         [:input {:type "file"
+                  :name "image"
+                  :accept (str/join ", " image-mime-types)}]]
+        [:br]
+        (->> topic/visibilities
+             (map (fn [[value {:keys [label]}]]
+                    [:label
+                     [:input {:type "radio"
+                              :name "visibility"
+                              :required true
+                              :checked (= value (:topic/visibility topic))
+                              :value value}]
+                     label
+                     [:br]])))
+        [:span {} "This topic is about: "]
+        (->> topic/types
+             (map (fn [[value {label :plural}]]
+                    [:label
+                     [:input {:type "radio"
+                              :name "type"
+                              :required true
+                              :checked (= value (:topic/type topic))
+                              :value value}]
+                     " " label " "])))
+        [:br]
+        [:button {:type "submit"} "Update Topic"]
+        " "
+        [:a {:href (str "/for/" topic-slug)} "Cancel"]]])))
+
 (defn post [{:keys [ctx session parameters]}]
   (let [topic (-> (:multipart parameters)
                   (assoc :creator (:id session))
                   (update :image multipart-image-to-data-uri)
                   (topic/create ctx))]
+    (response/redirect (str "/for/" (:topic/slug topic)) :see-other)))
+
+(defn post-edit [{:keys [ctx session path-params parameters]}]
+  (let [topic-id (:id (topic/get-by-slug (:topic path-params) ctx))
+        topic (-> (:multipart parameters)
+                  (update :image multipart-image-to-data-uri)
+                  (topic/update topic-id ctx))]
     (response/redirect (str "/for/" (:topic/slug topic)) :see-other)))
 
 (defn- event-item [event topic user ctx]
@@ -80,9 +142,11 @@
                       :alt "event image"}])
      [:a {:href event-url}
       [:h3 (h title)]]
-     (if-let [{organizer :user/name} (user/get-by-id ctx (:event/organizer event))]
-       (str " by " (if (empty? organizer) "Anonymous" organizer))
-       "there is no organizer yet! can you take over? < take over >")
+     (if-let [organizer-names (event/get-organizer-names-by-event-id ctx (:id event))]
+       (str " by " (str/join ", " (map #(if (empty? %) "Anonymous" %) organizer-names)))
+       [:div "there is no organizer yet! can you take over?"
+        [:form {:action (str event-url "/organize") :method "post"}
+        [:button {:type "submit"} "Organize " (topic/singular topic)]]])
      [:div
       "starting " (:event/start-date event) " at " (:event/start-time event)
       ", until " (:event/end-date event) " at " (:event/end-time event)]
@@ -121,6 +185,9 @@
                       :alt "logo"}])
               [:h1 (:topic/name topic)]]
              [:h2 (:topic/description topic)]
+             (when (topic/admin? ctx (:id topic) (:id user))
+               [:a {:href (str "/for/" (:topic/slug topic) "/edit")}
+               "Edit Meta"])
              [:div
               [:a {:href (str "/for/" (:topic/slug topic) "/new")}
                "New " (topic/singular topic)]]

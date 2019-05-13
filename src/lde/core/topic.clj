@@ -1,4 +1,5 @@
 (ns lde.core.topic
+  (:refer-clojure :exclude [update])
   (:require
     [clojure.set :refer [rename-keys]]
     [cuerdas.core :as cuerdas]
@@ -46,12 +47,19 @@
                  :description :topic/description
                  :image :topic/image})
 
+(def updatable-topic-keys
+  (select-keys topic-keys [:name
+                           :type
+                           :visibility
+                           :description
+                           :image]))
+
 (defn create [data ctx]
   (let [topic (-> data
             (select-keys (keys topic-keys))
             (rename-keys topic-keys)
-            (update :topic/visibility keyword)
-            (update :topic/type keyword)
+            (clojure.core/update :topic/visibility keyword)
+            (clojure.core/update :topic/type keyword)
             (assoc :id (db/id)
                    :topic/slug (unique-slug (:name data) ctx)))]
     (->> [topic
@@ -60,6 +68,16 @@
          :admin/user (:creator data)}]
        (db/save-multi ctx)
        first)))
+
+(defn update [data topic-id ctx]
+  (when-let [existing-topic (db/get-by-id ctx topic-id)]
+    (-> existing-topic
+        (merge (-> data
+                   (select-keys (keys updatable-topic-keys))
+                   (rename-keys updatable-topic-keys)))
+        (clojure.core/update :topic/visibility keyword)
+        (clojure.core/update :topic/type keyword)
+        (db/update existing-topic ctx))))
 
 (defn get-by-slug [slug ctx]
   (db/get-by-attribute ctx :topic/slug slug))

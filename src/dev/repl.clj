@@ -12,7 +12,9 @@
     [lde.web.router :as router]
     [lde.db :as db]
     [lde.core.settings :as settings]
+    [lde.core.event :as event]
     [lde.core.user :as user]
+    [lde.core.topic :as topic]
     [lde.config :refer [get-config]]))
 
 (def config (get-config "config.dev.edn"))
@@ -177,5 +179,13 @@
                        (user/get-token-for-mail @ctx "hi@jorin.me"))
 
 (settings/get-jwt-secret @ctx)
+
+
+(event/get-organizer-names-by-event-id
+  @ctx
+  (event/get-id-from-slugs @ctx {:topic "heart-of-clojure-2019"
+                                 :event "testing-jam"}))
+
+(topic/get-by-slug "heart-of-clojure-2019" @ctx)
 
 )

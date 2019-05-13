@@ -103,6 +103,16 @@
   (db/exists-by-attributes ctx {:organizer/event event-id
                                 :organizer/user user-id}))
 
+(defn organize [ctx event-id user-id]
+  (cond
+    (organizer? ctx event-id user-id)
+    :already-organizer
+
+    :else
+    (-> {:organizer/event event-id
+         :organizer/user user-id}
+        (db/save ctx))))
+
 (defn join [ctx event-id user-id]
   (let [{:keys [:event/max-attendees :event/attendee-count]} (get-by-id ctx event-id)]
     (cond
@@ -114,8 +124,8 @@
 
       :else
       (do (-> {:attendee/event event-id
-            :attendee/user user-id}
-           (db/save ctx))
+               :attendee/user user-id}
+              (db/save ctx))
           :ok))))
 
 (defn leave [ctx event-id user-id]
@@ -123,4 +133,12 @@
                   :attendee/user user-id}]
     (db/delete-by-attributes ctx attendee)))
 
-
+(defn get-organizer-names-by-event-id [ctx event-id]
+  (let [names (->> (db/q ctx {:find ['?name]
+                        :where '[[o :organizer/event event-id]
+                                 [o :organizer/user u]
+                                 [u :user/name ?name]]
+                        :args [{'event-id event-id}]})
+             (map first))]
+    (when-not (empty? names)
+      names)))
