@@ -53,7 +53,7 @@
                     :name "password"
                     :placeholder "Password"}]]
           [:br]
-          [:small "No need to set a password, we will send you a mail"]
+          [:small "No need to set a password, we will send you a mail instead"]
           [:br]
           [:label.link-field [:i "Optionally"] " link to your website/social media/...: "
            [:input {:type "text"

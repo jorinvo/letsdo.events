@@ -47,16 +47,26 @@
                  :image :topic/image})
 
 (defn create [data ctx]
-  (-> data
-      (select-keys (keys topic-keys))
-      (rename-keys topic-keys)
-      (update :topic/visibility keyword)
-      (update :topic/type keyword)
-      (assoc :topic/slug (unique-slug (:name data) ctx))
-      (db/save ctx)))
+  (let [topic (-> data
+            (select-keys (keys topic-keys))
+            (rename-keys topic-keys)
+            (update :topic/visibility keyword)
+            (update :topic/type keyword)
+            (assoc :id (db/id)
+                   :topic/slug (unique-slug (:name data) ctx)))]
+    (->> [topic
+        {:id (db/id)
+         :admin/topic (:id topic)
+         :admin/user (:creator data)}]
+       (db/save-multi ctx)
+       first)))
 
 (defn get-by-slug [slug ctx]
   (db/get-by-attribute ctx :topic/slug slug))
 
 (defn list-by-user [user-id ctx]
   (db/list-by-attribute ctx :topic/creator user-id))
+
+(defn admin? [ctx topic-id user-id]
+  (db/exists-by-attributes ctx {:admin/topic topic-id
+                                :admin/user user-id}))

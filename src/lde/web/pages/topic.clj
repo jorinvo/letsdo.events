@@ -68,6 +68,45 @@
                   (topic/create ctx))]
     (response/redirect (str "/for/" (:topic/slug topic)) :see-other)))
 
+(defn- event-item [event topic user ctx]
+  (let [title (:event/name event)
+        event-url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
+        attendees (:event/attendee-count event)
+        max-attendees (:event/max-attendees event)
+        user-joined (event/joined? ctx (:id event) (:id user))]
+    [:div
+     (when-let [image (:event/image event)]
+               [:img {:src image
+                      :alt "event image"}])
+     [:a {:href event-url}
+      [:h3 (h title)]]
+     (if-let [{organizer :user/name} (user/get-by-id ctx (:event/organizer event))]
+       (str " by " (if (empty? organizer) "Anonymous" organizer))
+       "there is no organizer yet! can you take over? < take over >")
+     [:div
+      "starting " (:event/start-date event) " at " (:event/start-time event)
+      ", until " (:event/end-date event) " at " (:event/end-time event)]
+     (when-let [l (:event/location event)]
+       [:p (h l)])
+     [:p (escape-with-br (:event/description event))]
+     attendees
+     (if max-attendees
+       (str "/" max-attendees " " (if (= max-attendees 1) "attendee" "attendees"))
+       (if (= attendees 1) " attendee" " attendees"))
+     (cond
+       user-joined
+       [:div
+        [:span " - including you!"]
+        [:form {:action (str event-url "/leave") :method "post"}
+         [:button {:type "submit"} "Leave " (topic/singular topic)]]]
+
+       (and max-attendees (>= attendees max-attendees))
+       [:span " No spot left!"]
+
+       :else
+       [:form {:action (str event-url "/join") :method "post"}
+        [:button {:type "submit"} "Join " (topic/singular topic)]])]))
+
 (defn overview [{:keys [path-params ctx session]}]
   (let [topic (topic/get-by-slug (:topic path-params) ctx)
         topic-url (str "/for/" (:topic path-params))

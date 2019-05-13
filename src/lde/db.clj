@@ -1,4 +1,5 @@
 (ns lde.db
+  (:refer-clojure :exclude [update])
   (:require [clojure.set :refer [rename-keys]]
             [crux.api :as crux]
             [crux.decorators.aggregation.alpha :as aggr])
@@ -21,17 +22,26 @@
 (defn close [{:keys [::crux]}]
   (.close crux))
 
+(defn- crux->id [x] (rename-keys x {:crux.db/id :id}))
+(defn- id->crux [x] (rename-keys x {:id :crux.db/id}))
+
 (defn save-multi [{:keys [::crux]} data-list]
   (->> data-list
-       (mapv #(vector :crux.tx/put
-                      (:id %)
-                      (rename-keys % {:id :crux.db/id})))
+       (mapv #(vector :crux.tx/put (:id %) (id->crux %)))
        (crux/submit-tx crux))
   data-list)
 
 (defn save [data ctx]
   (let [with-id (assoc data :id (id))]
     (first (save-multi ctx [with-id]))))
+
+(defn update [new-data previous-data {:keys [::crux]}]
+  (->> [[:crux.tx/cas
+         (:id new-data)
+         (id->crux previous-data)
+         (id->crux new-data)]]
+       (crux/submit-tx crux))
+  new-data)
 
 (defn list-by-attributes [{:keys [::crux]} attrs]
   (let [db (crux/db crux)]
@@ -40,7 +50,7 @@
                                     ['id attr value]) attrs)})
          (map first)
          (map #(crux/entity db %))
-         (map #(rename-keys % {:crux.db/id :id})))))
+         (map crux->id))))
 
 (defn list-by-attribute [ctx attr value]
   (list-by-attributes ctx {attr value}))

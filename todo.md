@@ -2,28 +2,44 @@
 
 ## Tech
 
-- redirect empty /for and /about one up
+- keep image on event update
+- save images separately
+  - image id should be md5 hash of content
+
+- allow to take over event
+
+- event edit view
+  - show that you are organzing / creator
+  - allow editing organizers
+  - display image
+  - allow image upload
+
+- topic edit view
+  - only by admin
+
+- list view: no join for events you organize or when there is no organizer yet
+
 - sorting of event list
 - event listing filters
 - event listing search
-- redirect unauthorized to login with redirect URI
-    letsdo.events/login?goto=heart-of-clojure/about/cljdoc-hacking
 - error page
-- delete event
-- change cookie to JWT
-  - then: login email only
-- save type with each document
-- helper to delete all data of a kind
 
-- topic edit view (use CAS transaction for editing)
-  - only by admin
-- event edit view
-- allow editing slug and check for conflicts
-- edit only by organizer
-- image resizing
 - image preview
 - [clear image input](https://www.w3schools.com/howto/howto_html_clear_input.asp)
 
+- send mail
+- redirect empty /for and /about one up
+- redirect unauthorized to login with redirect URI
+    letsdo.events/login?goto=heart-of-clojure/about/cljdoc-hacking
+
+- allow editing slug and check for conflicts
+- edit only by organizer
+- image resizing
+
+- use same data for schema and for key selection
+
+- delete event
+- delete topic
 - allow app to be running at sub-route instead of top level
 - catch errors and never show to client
 - db location from config
@@ -35,9 +51,7 @@
 - repair on read: when reading things that are supposed to be unique but are not, throw away invalid ones
   - read user by email: throw away all but the first in time if there is more than one
 
-- topic settings page
 - list all your topics
-- delete topic
 - list users by topic
 
 - make creator topic admin

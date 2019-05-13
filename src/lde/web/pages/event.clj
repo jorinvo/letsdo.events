@@ -11,7 +11,7 @@
     [lde.core.topic :as topic]
     [lde.core.user :as user]))
 
-(defn event-item [event topic user ctx]
+(defn show-event [event topic user ctx]
   (let [title (:event/name event)
         event-url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
         attendees (:event/attendee-count event)
@@ -50,6 +50,76 @@
        [:form {:action (str event-url "/join") :method "post"}
         [:button {:type "submit"} "Join " (topic/singular topic)]])]))
 
+(defn edit-event [event topic user ctx]
+  (let [path (str "/for/" (:topic/slug topic) "/about/" (:event/slug event) "/edit")
+        attendees (:event/attendee-count event)]
+    [:div
+     [:form {:action path
+             :method "post"
+             :enctype "multipart/form-data"}
+      [:label (topic/singular topic) " title: "
+       [:input {:type "text"
+                :name "name"
+                :value (:event/name event)
+                :required true
+                :placeholder (str (topic/singular topic) " name")}]]
+      [:br]
+      [:textarea
+       {:type "text"
+        :name "description"
+        :required true
+        :placeholder "Write a description"
+        :rows 10
+        :cols 50}
+       (:event/description event)]
+      [:br]
+      [:label "optional: Select an image"
+       [:input {:type "file"
+                :name "image"
+                :accept (str/join ", " image-mime-types)}]]
+      [:br]
+      "When "
+      [:br]
+      "Starting: "
+      [:input {:type "date"
+               :name "start-date"
+               :value (:event/start-date event)
+               :placeholder "Date"}]
+      [:input {:type "time"
+               :name "start-time"
+               :value (:event/start-time event)
+               :placeholder "Time"}]
+      [:br]
+      "Until: "
+      [:input {:type "date"
+               :name "end-date"
+               :value (:event/end-date event)
+               :placeholder "Date"}]
+      [:input {:type "time"
+               :name "end-time"
+               :value (:event/end-time event)
+               :placeholder "Time"}]
+      [:br]
+      [:label "Where "
+       [:input {:type "text"
+                :name "location"
+                :value (:event/location event)
+                :placeholder "Location"}]]
+      [:br]
+      [:label "Max. number of attendees "
+       [:input {:type "number"
+                :name "max-attendees"
+                :value (:event/max-attendees event)
+                :placeholder "Number"
+                :min 1
+                :step 1}]]
+      [:br]
+      "currently "
+      attendees
+      (if (= attendees 1) " attendee" " attendees")
+      [:br]
+      [:button {:type "submit"} "Update " (topic/singular topic)]]]))
+
 (defn get [{:keys [ctx path-params session]}]
   (let [topic-slug (:topic path-params)
         topic (topic/get-by-slug topic-slug ctx)
@@ -66,7 +136,10 @@
        [:a {:href topic-url}
         [:h1 (:topic/name topic)]]
        [:h2 (:topic/description topic)]
-       (event-item event topic user ctx)])))
+       (if (or (event/organizer? ctx (:id event) (:id user))
+               (= (:id user) (:event/creator event)))
+         (edit-event event topic user ctx)
+         (show-event event topic user ctx))])))
 
 (comment time/local-date-time (str (:start-date params) "T" (:start-time params)))
 
@@ -157,6 +230,19 @@
                                                   (Integer/parseInt %)))
                   (update :image multipart-image-to-data-uri)
                   (event/create ctx))
+        url (str "/for/" topic-slug "/about/" (:event/slug event))]
+    (response/redirect url :see-other)))
+
+(defn edit [{:keys [ctx parameters path-params session]}]
+  (let [event-id (event/get-id-from-slugs ctx path-params)
+        topic-slug (:topic path-params)
+        multipart (:multipart parameters)
+        event (-> multipart
+                  (update :max-attendees #(if (empty? %)
+                                                  nil
+                                                  (Integer/parseInt %)))
+                  (update :image multipart-image-to-data-uri)
+                  (event/update event-id ctx))
         url (str "/for/" topic-slug "/about/" (:event/slug event))]
     (response/redirect url :see-other)))
 

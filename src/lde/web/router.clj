@@ -171,14 +171,24 @@
                                              :description req-str
                                              :intention #(contains? event/intentions (keyword %))
                                              :start-date opt-date
-                                             :end-date opt-date
                                              :start-time opt-time
+                                             :end-date opt-date
                                              :end-time opt-time
                                              :max-attendees ::max-attendees
                                              :location string?
                                              :image ::image}}}}]
     ["/about/:event"
      ["" {:get event-page/get}]
+     ["/edit" {:post {:handler event-page/edit
+                      :parameters {:multipart {:name req-str
+                                               :description req-str
+                                               :start-date opt-date
+                                               :start-time opt-time
+                                               :end-date opt-date
+                                               :end-time opt-time
+                                               :max-attendees ::max-attendees
+                                               :location string?
+                                               :image ::image}}}}]
      ["/join" {:post event-page/join}]
      ["/leave" {:post event-page/leave}]]]])
 
