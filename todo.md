@@ -3,11 +3,12 @@
 ## Tech
 
 - event/topic edit views
-  - display image
   - allow image upload
   - keep image on update
   - save images separately
     - image id should be md5 hash of content
+  - image preview
+  - [clear image input](https://www.w3schools.com/howto/howto_html_clear_input.asp)
 
 - list view: no join for events you organize or when there is no organizer yet
 
@@ -15,9 +16,6 @@
 - event listing filters
 - event listing search
 - error page
-
-- image preview
-- [clear image input](https://www.w3schools.com/howto/howto_html_clear_input.asp)
 
 - send mail
 - redirect empty /for and /about one up
@@ -30,8 +28,6 @@
 
 - use same data for schema and for key selection
 
-- delete event
-- delete topic
 - allow app to be running at sub-route instead of top level
 - catch errors and never show to client
 - db location from config
@@ -44,6 +40,9 @@
   - read user by email: throw away all but the first in time if there is more than one
 
 - allow adding and removing organizers
+
+- confirm delete event
+- confirm delete topic
 
 - list all your topics
 - list users by topic

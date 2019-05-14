@@ -93,7 +93,7 @@
 
   (clojure.repl/dir ring.util.response)
 
-  (reload-browser)
+  (do (in-ns 'dev.repl) (reload-browser))
 
   (db/get-by-email @ctx "hi@jorin.me")
 
@@ -186,6 +186,8 @@
   (event/get-id-from-slugs @ctx {:topic "heart-of-clojure-2019"
                                  :event "testing-jam"}))
 
-(topic/get-by-slug "heart-of-clojure-2019" @ctx)
+
+
+(event/list-attached-ids-by-topic @ctx (:id (topic/get-by-slug "heart-of-clojure-2019" @ctx)))
 
 )

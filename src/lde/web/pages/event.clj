@@ -53,7 +53,7 @@
         [:button {:type "submit"} "Join " (topic/singular topic)]])]))
 
 (defn edit-event [event topic user ctx]
-  (let [path (str "/for/" (:topic/slug topic) "/about/" (:event/slug event) "/edit")
+  (let [url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
         attendees (:event/attendee-count event)]
     [:div
      [:i "You "
@@ -61,7 +61,7 @@
                    "are organizing"
                    "created")
       " this " (str/lower-case (topic/singular topic)) "!"]
-     [:form {:action path
+     [:form {:action (str url "/edit")
              :method "post"
              :enctype "multipart/form-data"}
       [:label (topic/singular topic) " title: "
@@ -81,6 +81,10 @@
        (:event/description event)]
       [:br]
       [:label "optional: Select an image"
+      (when-let [image (:event/image event)]
+                [:div
+                 [:img {:src image
+                        :alt "image"}]])
        [:input {:type "file"
                 :name "image"
                 :accept (str/join ", " image-mime-types)}]]
@@ -125,7 +129,9 @@
       attendees
       (if (= attendees 1) " attendee" " attendees")
       [:br]
-      [:button {:type "submit"} "Update " (topic/singular topic)]]]))
+      [:button {:type "submit"} "Update " (topic/singular topic)]]
+     [:form {:action (str url "/delete") :method "post"}
+              [:button {:type "submit"} "Delete " (topic/singular topic)]]]))
 
 (defn get [{:keys [ctx path-params session]}]
   (let [topic-slug (:topic path-params)
@@ -273,4 +279,10 @@
   (let [event-id (event/get-id-from-slugs ctx path-params)
         url (str "/for/" (:topic path-params))]
     (event/leave ctx event-id (:id session))
+    (response/redirect url :see-other)))
+
+(defn delete [{:keys [ctx path-params]}]
+  (let [event-id (event/get-id-from-slugs ctx path-params)
+        url (str "/for/" (:topic path-params))]
+    (event/delete ctx event-id)
     (response/redirect url :see-other)))

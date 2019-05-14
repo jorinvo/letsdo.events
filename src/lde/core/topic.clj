@@ -3,7 +3,8 @@
   (:require
     [clojure.set :refer [rename-keys]]
     [cuerdas.core :as cuerdas]
-    [lde.db :as db]))
+    [lde.db :as db]
+    [lde.core.event :as event]))
 
 (def visibilities (array-map
                   :public
@@ -88,3 +89,15 @@
 (defn admin? [ctx topic-id user-id]
   (db/exists-by-attributes ctx {:admin/topic topic-id
                                 :admin/user user-id}))
+
+(defn list-attached-ids [ctx topic-id]
+  (->> (db/q ctx {:find ['?id]
+                   :where '[[?id :admin/topic t]]
+                   :args [{'t topic-id}]})
+       (map first)))
+
+(defn delete [ctx topic-id]
+  (->> [topic-id]
+       (concat (list-attached-ids ctx topic-id))
+       (concat (event/list-attached-ids-by-topic ctx topic-id))
+    (db/delete-by-ids ctx)))

@@ -63,14 +63,15 @@
 
 (defn edit [{:keys [path-params ctx]}]
   (let [topic-slug (:topic path-params)
-        topic (topic/get-by-slug topic-slug ctx)]
+        topic (topic/get-by-slug topic-slug ctx)
+        url (str "/for/" topic-slug)]
     (render
       {:title "Edit Topic"
        :description "Hi"}
       [:div
        [:h1
         "Edit topic"]
-       [:form {:action (str "/for/" topic-slug "/edit")
+       [:form {:action (str "/edit")
                :method "post"
                :enctype "multipart/form-data"}
         [:label "Topic name: "
@@ -87,6 +88,10 @@
                   :placeholder "Description"}]]
         [:br]
         [:label "optional: Select an image"
+         (when-let [image (:topic/image topic)]
+           [:div
+            [:img {:src image
+                   :alt "logo"}]])
          [:input {:type "file"
                   :name "image"
                   :accept (str/join ", " image-mime-types)}]]
@@ -114,7 +119,9 @@
         [:br]
         [:button {:type "submit"} "Update Topic"]
         " "
-        [:a {:href (str "/for/" topic-slug)} "Cancel"]]])))
+        [:a {:href (str "/for/" topic-slug)} "Cancel"]]
+       [:form {:action (str url "/delete") :method "post"}
+        [:button {:type "submit"} "Delete topic"]]])))
 
 (defn post [{:keys [ctx session parameters]}]
   (let [topic (-> (:multipart parameters)
@@ -192,3 +199,8 @@
               [:a {:href (str "/for/" (:topic/slug topic) "/new")}
                "New " (topic/singular topic)]]
              [:ul (map #(vector :li (event-item % topic user ctx)) events)]])))
+
+(defn delete [{:keys [ctx path-params]}]
+  (let [topic-id (:id (topic/get-by-slug (:topic path-params) ctx))]
+    (topic/delete ctx topic-id)
+    (response/redirect "/" :see-other)))

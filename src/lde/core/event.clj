@@ -133,6 +133,26 @@
                   :attendee/user user-id}]
     (db/delete-by-attributes ctx attendee)))
 
+(defn list-attached-ids [ctx event-id]
+  (->> (db/q ctx {:find ['?id]
+                   :where '[(or [?id :attendee/event e]
+                                [?id :interest/event e]
+                                [?id :organizer/event e])]
+                   :args [{'e event-id}]})
+       (map first)))
+
+(defn delete [ctx event-id]
+  (db/delete-by-ids ctx (conj (list-attached-ids ctx event-id) event-id)))
+
+(defn list-attached-ids-by-topic [ctx topic-id]
+  (->> (db/q ctx {:find ['?id]
+                   :where '[[e :event/topic t]
+                            (or [?id :attendee/event e]
+                                [?id :interest/event e]
+                                [?id :organizer/event e])]
+                   :args [{'t topic-id}]})
+       (map first)))
+
 (defn get-organizer-names-by-event-id [ctx event-id]
   (let [names (->> (db/q ctx {:find ['?name]
                         :where '[[o :organizer/event event-id]

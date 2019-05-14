@@ -172,6 +172,7 @@
                                               :type #(contains? topic/types (keyword %))
                                               :visibility #(contains? topic/visibilities (keyword %))
                                               :image ::image}}}}]
+    ["/delete" {:post topic-page/delete}]
     ["/new" {:get event-page/new
              :post {:handler event-page/post
                     :parameters {:multipart {:name req-str
@@ -198,7 +199,8 @@
                                                :image ::image}}}}]
      ["/organize" {:post event-page/organize}]
      ["/join" {:post event-page/join}]
-     ["/leave" {:post event-page/leave}]]]])
+     ["/leave" {:post event-page/leave}]
+     ["/delete" {:post event-page/delete}]]]])
 
 (defn make-context-middleware [ctx]
   (fn [handler]
