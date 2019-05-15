@@ -2,8 +2,9 @@
 
 ## Tech
 
-- event/topic edit views
-  - allow image upload
+- design
+
+- allow image upload
   - keep image on update
   - save images separately
     - image id should be md5 hash of content

@@ -25,7 +25,7 @@
       (render
         {:title "Login"
          :description "Hi"}
-        [:div#login-container {:class (subs path 1)}
+        [:div.login-container {:class (subs path 1)}
          [:h1.f1
           [:a.login-heading
            {:href "/login"
@@ -37,31 +37,31 @@
             :onClick signup-click}
            "Signup"]]
          [:form {:action path :method "post"}
-          [:label.name-field "Name: "
-           [:input {:type "text"
-                    :name "name"
-                    :placeholder "Name"}]]
-          [:br]
-          [:label "Email: "
-           [:input {:type "email"
-                    :name "email"
-                    :required true
-                    :placeholder "Email"}]]
-          [:br]
-          [:label [:i "Optionally"] " password: "
-           [:input {:type "password"
-                    :name "password"
-                    :placeholder "Password"}]]
-          [:br]
+          [:div.form-field
+           [:label.name-field "Name: "
+            [:input {:type "text"
+                     :name "name"
+                     :placeholder "Name"}]]]
+          [:div.form-field
+           [:label "Email: "
+            [:input {:type "email"
+                     :name "email"
+                     :required true
+                     :placeholder "Email"}]]]
+          [:div.form-field
+           [:label [:i "Optionally"] " password: "
+            [:input {:type "password"
+                     :name "password"
+                     :placeholder "Password"}]]]
           [:small "No need to set a password, we will send you a mail instead"]
-          [:br]
-          [:label.link-field [:i "Optionally"] " link to your website/social media/...: "
-           [:input {:type "text"
-                    :name "link"
-                    :placeholder "Link"}]]
-          [:br]
-          [:button.login-button {:type "submit"} "Login"]
-          [:button.signup-button {:type "submit"} "Signup"]]])))
+          [:div.form-field
+           [:label.link-field [:i "Optionally"] " link to your website/social media/...: "
+            [:input {:type "text"
+                     :name "link"
+                     :placeholder "Link"}]]]
+          [:div.form-field
+           [:button.login-button {:type "submit"} "Login"]
+           [:button.signup-button {:type "submit"} "Signup"]]]])))
 
 (defn post-login [{:keys [ctx params]}]
   (let [password (:password params)]

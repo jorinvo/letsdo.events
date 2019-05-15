@@ -198,7 +198,7 @@
              [:div
               [:a {:href (str "/for/" (:topic/slug topic) "/new")}
                "New " (topic/singular topic)]]
-             [:ul (map #(vector :li (event-item % topic user ctx)) events)]])))
+             [:ul.overview-list (map #(vector :li (event-item % topic user ctx)) events)]])))
 
 (defn delete [{:keys [ctx path-params]}]
   (let [topic-id (:id (topic/get-by-slug (:topic path-params) ctx))]

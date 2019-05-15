@@ -17,12 +17,10 @@
                  [:meta {:charset "utf-8"}]
                  [:meta {:content (:description options) :name "description"}]
                  [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-                 (comment include-css
-                                    "https://unpkg.com/tachyons@4.9.0/css/tachyons.min.css")
                  (include-css
                    "/css/main.css")]
                 [:body {}
-                 content]])})
+                 [:div.container content]]])})
 
 (defn escape-with-br [s]
   (str/replace (h s) #"(\r\n|\r|\n)" "<br>"))
