@@ -3,6 +3,7 @@
   (:require
     [clojure.set :refer [rename-keys]]
     [cuerdas.core :as cuerdas]
+    [lde.core.image :as image]
     [lde.db :as db]))
 
 (def intentions (array-map
@@ -45,26 +46,33 @@
       base)))
 
 (defn create [data ctx]
-  (let [event (-> data
+  (let [image (image/new-entity-from-data (:image data) ctx)
+        event (-> data
                   (select-keys (keys event-keys))
                   (rename-keys event-keys)
                   (assoc :id (db/id)
-                         :event/slug (unique-slug (:name data) ctx)))
+                         :event/slug (unique-slug (:name data) ctx)
+                         :event/image (:id image)))
         {intention :intention} data]
   (->> [event
+        image
         {:id (db/id)
          (keyword intention "event") (:id event)
          (keyword intention "user") (:event/creator event)}]
-       (db/save-multi ctx)
+       (db/save-multi! ctx)
        first)))
 
 (defn update [data event-id ctx]
   (when-let [existing-event (db/get-by-id ctx event-id)]
-    (-> existing-event
-        (merge (-> data
-                   (select-keys (keys updatable-event-keys))
-                   (rename-keys updatable-event-keys)))
-        (db/update existing-event ctx))))
+    (let [image (image/new-entity-from-data (:image data) ctx)
+          new-event (-> existing-event
+                        (merge (-> data
+                                   (select-keys (keys updatable-event-keys))
+                                   (rename-keys updatable-event-keys)))
+                        (assoc :event/image (:id image)))]
+      (db/tx! ctx [(db/update new-event existing-event)
+                   (db/save image)])
+      new-event)))
 
 (defn assoc-attendee-count [event ctx]
   (assoc event :event/attendee-count
@@ -111,7 +119,7 @@
     :else
     (-> {:organizer/event event-id
          :organizer/user user-id}
-        (db/save ctx))))
+        (db/create! ctx))))
 
 (defn join [ctx event-id user-id]
   (let [{:keys [:event/max-attendees :event/attendee-count]} (get-by-id ctx event-id)]
@@ -125,13 +133,13 @@
       :else
       (do (-> {:attendee/event event-id
                :attendee/user user-id}
-              (db/save ctx))
+              (db/create! ctx))
           :ok))))
 
 (defn leave [ctx event-id user-id]
   (let [attendee {:attendee/event event-id
                   :attendee/user user-id}]
-    (db/delete-by-attributes ctx attendee)))
+    (db/delete-by-attributes! ctx attendee)))
 
 (defn list-attached-ids [ctx event-id]
   (->> (db/q ctx {:find ['?id]
@@ -142,7 +150,7 @@
        (map first)))
 
 (defn delete [ctx event-id]
-  (db/delete-by-ids ctx (conj (list-attached-ids ctx event-id) event-id)))
+  (db/delete-by-ids! ctx (conj (list-attached-ids ctx event-id) event-id)))
 
 (defn list-attached-ids-by-topic [ctx topic-id]
   (->> (db/q ctx {:find ['?id]

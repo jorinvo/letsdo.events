@@ -55,6 +55,7 @@
 (defn edit-event [event topic user ctx]
   (let [url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
         attendees (:event/attendee-count event)]
+    (prn url)
     [:div
      [:i "You "
       (if (event/organizer? ctx (:id event) (:id user))
@@ -257,6 +258,7 @@
                   (update :image multipart-image-to-data-uri)
                   (event/update event-id ctx))
         url (str "/for/" topic-slug "/about/" (:event/slug event))]
+    (prn event)
     (response/redirect url :see-other)))
 
 (defn organize [{:keys [ctx path-params session]}]

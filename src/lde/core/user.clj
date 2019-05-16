@@ -18,7 +18,7 @@
         (select-keys (keys user-key-map))
         (rename-keys user-key-map)
         (update :user/password #(when-not (empty? %) (auth/hash %)))
-        (db/save ctx))))
+        (db/create! ctx))))
 
 (defn get-by-id [ctx id]
   (db/get-by-id ctx id))

@@ -190,4 +190,6 @@
 
 (event/list-attached-ids-by-topic @ctx (:id (topic/get-by-slug "heart-of-clojure-2019" @ctx)))
 
+(db/exists-by-id? @ctx :settings/cookie-secret)
+
 )

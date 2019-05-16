@@ -8,6 +8,7 @@
     [ring.util.response :as response]
     [lde.web :refer [render escape-with-br multipart-image-to-data-uri image-mime-types]]
     [lde.core.topic :as topic]
+    [lde.core.image :as image]
     [lde.core.user :as user]
     [lde.core.event :as event]))
 
@@ -71,7 +72,7 @@
       [:div
        [:h1
         "Edit topic"]
-       [:form {:action (str "/edit")
+       [:form {:action (str url "/edit")
                :method "post"
                :enctype "multipart/form-data"}
         [:label "Topic name: "
@@ -88,7 +89,7 @@
                   :placeholder "Description"}]]
         [:br]
         [:label "optional: Select an image"
-         (when-let [image (:topic/image topic)]
+         (when-let [image (image/get-by-hash (:topic/image topic) ctx)]
            [:div
             [:img {:src image
                    :alt "logo"}]])
@@ -144,7 +145,7 @@
         max-attendees (:event/max-attendees event)
         user-joined (event/joined? ctx (:id event) (:id user))]
     [:div
-     (when-let [image (:event/image event)]
+     (when-let [image (image/get-by-hash (:event/image event) ctx)]
                [:img {:src image
                       :alt "event image"}])
      [:a {:href event-url}
@@ -187,7 +188,7 @@
              :description "Hi"}
             [:div
              [:a {:href topic-url}
-              (when-let [image (:topic/image topic)]
+              (when-let [image (image/get-by-hash (:topic/image topic) ctx)]
                [:img {:src image
                       :alt "logo"}])
               [:h1 (:topic/name topic)]]

@@ -25,23 +25,79 @@
 (defn- crux->id [x] (rename-keys x {:crux.db/id :id}))
 (defn- id->crux [x] (rename-keys x {:id :crux.db/id}))
 
-(defn save-multi [{:keys [::crux]} data-list]
-  (->> data-list
-       (mapv #(vector :crux.tx/put (:id %) (id->crux %)))
-       (crux/submit-tx crux))
-  data-list)
+(defn tx!
+  "Submit a transaction to the DB.
+  Ignores nil items."
+  [{:keys [::crux]} transaction-list]
+  (->> transaction-list
+       (filterv some?)
+       (crux/submit-tx crux)))
 
-(defn save [data ctx]
-  (let [with-id (assoc data :id (id))]
-    (first (save-multi ctx [with-id]))))
+(defn save-multi
+  "Creates a transaction-list for a list of entities.
+  Each must have an :id.
+  Ignores nil items."
+  [entitiy-list]
+  (->> entitiy-list
+       (filterv some?)
+       (mapv #(vector :crux.tx/put (:id %) (id->crux %)))))
 
-(defn update [new-data previous-data {:keys [::crux]}]
-  (->> [[:crux.tx/cas
-         (:id new-data)
-         (id->crux previous-data)
-         (id->crux new-data)]]
-       (crux/submit-tx crux))
-  new-data)
+(defn save-multi! [ctx entitiy-list]
+  (->> (save-multi entitiy-list)
+       (tx! ctx))
+  entitiy-list)
+
+(defn save [entity]
+  (first (save-multi [entity])))
+
+(defn save! [entity]
+  (first (save-multi! [entity])))
+
+(defn create [entity]
+  (first (save-multi [(assoc entity :id (id))])))
+
+(defn create! [entity ctx]
+  (first (save-multi! ctx [(assoc entity :id (id))])))
+
+(defn update [new-entity previous-entity]
+  [:crux.tx/cas
+   (:id new-entity)
+   (id->crux previous-entity)
+   (id->crux new-entity)])
+
+(defn update! [new-entity previous-entity ctx]
+  (->> [(update new-entity previous-entity)]
+       (tx! ctx))
+  new-entity)
+
+(defn set-key [k v]
+  [:crux.tx/put k {:crux.db/id k :value v}])
+
+(defn set-key! [ctx k v]
+  (tx! ctx [(set-key k v)]))
+
+(defn delete-by-ids [ids]
+  (->> ids
+       (mapv #(vector :crux.tx/delete %))))
+
+(defn delete-by-ids! [ctx ids]
+  (->> (delete-by-ids ids)
+       (tx! ctx)))
+
+(defn delete-by-id [id]
+  (delete-by-ids [id]))
+
+(defn delete-by-id! [id ctx]
+  (delete-by-ids! ctx [id]))
+
+(defn delete-by-attributes! [ctx attrs]
+  (->> (crux/q (crux/db (::crux ctx))
+               {:find '[id]
+                :where (mapv (fn [[attr value]]
+                               ['id attr value]) attrs)})
+       (map first)
+       (mapv #(vector :crux.tx/delete %))
+       (tx! ctx)))
 
 (defn list-by-attributes [{:keys [::crux]} attrs]
   (let [db (crux/db crux)]
@@ -73,6 +129,14 @@
 (defn count-by-attribute [ctx attr value]
   (count-by-attributes ctx {attr value}))
 
+(defn exists-by-id? [{:keys [::crux]} id]
+  (-> (crux/db crux)
+      (crux/q {:find '[?id]
+               :where [['?id :crux.db/id id]]})
+       first
+       nil?
+       not))
+
 (defn exists-by-attributes [ctx attrs]
   (< 0 (count-by-attributes ctx attrs)))
 
@@ -80,11 +144,9 @@
   (exists-by-attributes ctx {attr value}))
 
 (defn get-by-id [{:keys [::crux]} id]
-  (rename-keys (crux/entity (crux/db crux) id)
-               {:crux.db/id :id}))
-
-(defn set-key [{:keys [::crux]} k v]
-  (crux/submit-tx crux [[:crux.tx/put k {:crux.db/id k :value v}]]))
+  (-> (crux/db crux)
+      (crux/entity id)
+      crux->id))
 
 (defn get-key [{:keys [::crux]} k]
   (let [db (crux/db crux)
@@ -92,23 +154,6 @@
                       :where '[[id :value value]]
                       :args [{'id k}]})]
     (first (first q))))
-
-(defn delete-by-ids [{:keys [::crux]} ids]
-  (->> ids
-       (mapv #(vector :crux.tx/delete %))
-       (crux/submit-tx crux)))
-
-(defn delete-by-id [ctx id]
-  (delete-by-ids ctx [id]))
-
-(defn delete-by-attributes [{:keys [::crux]} attrs]
-  (->> (crux/q (crux/db crux)
-               {:find '[id]
-                :where (mapv (fn [[attr value]]
-                               ['id attr value]) attrs)})
-       (map first)
-       (mapv #(vector :crux.tx/delete %))
-       (crux/submit-tx crux)))
 
 (comment
 

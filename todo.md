@@ -2,14 +2,33 @@
 
 ## Tech
 
-- design
+- save images separately
 
-- allow image upload
-  - keep image on update
-  - save images separately
-    - image id should be md5 hash of content
-  - image preview
-  - [clear image input](https://www.w3schools.com/howto/howto_html_clear_input.asp)
+- new crux version with new java version
+
+- have single transactor to guarantee constraints
+
+- image upload preview
+- [clear image input](https://www.w3schools.com/howto/howto_html_clear_input.asp)
+- edit views: keep image on update without image
+
+- production setup
+  - main
+  - config file
+  - teardown
+  - db location from config
+  - config defaults
+  - spec for config
+  - production router
+  - package as uberjar
+
+- design
+  - options via config
+    - background-color
+    - primary-color
+    - text-color
+    - title-font
+    - base-font
 
 - list view: no join for events you organize or when there is no organizer yet
 
@@ -24,21 +43,23 @@
     letsdo.events/login?goto=heart-of-clojure/about/cljdoc-hacking
 
 - allow editing slug and check for conflicts
-- edit only by organizer
 - image resizing
+
+- default to public topic for now
+
+- list public topics on /
 
 - use same data for schema and for key selection
 
 - allow app to be running at sub-route instead of top level
 - catch errors and never show to client
-- db location from config
-- config defaults
-- spec for config
-- production router
-- production build
 - nice error/spec messages for dev
 - repair on read: when reading things that are supposed to be unique but are not, throw away invalid ones
   - read user by email: throw away all but the first in time if there is more than one
+- delete unused images
+  - repair on read: in case an image cannot be found, it must be restored from history
+
+- HTTPS via letsencrypt support
 
 - allow adding and removing organizers
 
@@ -48,33 +69,30 @@
 - list all your topics
 - list users by topic
 
-- make creator topic admin
 - CRUD for topic admin
 - multiple organizers per event
 
 - user settings at /me
 - delete account
 
-- list public topics
-
-- notify about new activity (via mail)
+- notify about new activity (via mail) if subscribed to topic
+  - admin subscribes automatically
+  - can unsubscribe
+- notify about updated to activity (via mail) if subscribed
+  - joining or interest subscribe automatically
+  - can unsubscribe
 - calendar integration
 
-- format event date nicely and handle missing values
+- format event date nicely
 - event times: support invalid dates / try to correct format
-- include tachyons locally
-- limit input char length (against to evil input)
-- use your own colors
+- limit input char length (against evil input)
 - spec for API responses
 - security headers
-- add introduction text
 - gzip
 - html meta tags
 - cache css
 - imprint and cookie warning
-- storing images as binary in crux
 - [cookie settings](https://github.com/ring-clojure/ring/wiki/Cookies)
-- js as progressive enhancement
 - check for weak password
 - cache pages
 - login delay against brute force
@@ -83,7 +101,7 @@
 - [prevent redirect attacks](https://rundis.github.io/blog/2015/buddy_auth_part2.html)
 - monitoring/error tracking
 
-- handle multiple anonymous organizers
+- handle display of multiple anonymous organizers
 
 - request joining topic
 - anyone can join/invite only
@@ -99,12 +117,12 @@
 
 - setup possible dates
 
-- login theme depending on goto parameter (styles of topic)
-
 - Gravatar
 - API keys
 - json export
 - interact with events/comments/app via email
+  - buttons to join, show interest, ...
+  - reply to comment
 - integrate with Meetup.com
   - sync to meetup.com
   - sync form meetup.com
