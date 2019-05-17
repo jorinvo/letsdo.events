@@ -56,36 +56,38 @@
                            :image]))
 
 (defn create [data ctx]
-  (let [image (image/new-entity-from-data (:image data) ctx)
-        topic (-> data
-                  (select-keys (keys topic-keys))
-                  (rename-keys topic-keys)
-                  (clojure.core/update :topic/visibility keyword)
-                  (clojure.core/update :topic/type keyword)
-                  (assoc :id (db/id)
-                         :topic/slug (unique-slug (:name data) ctx)
-                         :topic/image (:id image)))]
-    (->> [topic
-          image
-          {:id (db/id)
-           :admin/topic (:id topic)
-           :admin/user (:creator data)}]
-         (db/save-multi! ctx)
-         first)))
+  (db/tx ctx
+         (let [image (image/new-entity-from-data (:image data) ctx)
+               topic (-> data
+                         (select-keys (keys topic-keys))
+                         (rename-keys topic-keys)
+                         (clojure.core/update :topic/visibility keyword)
+                         (clojure.core/update :topic/type keyword)
+                         (assoc :id (db/id)
+                                :topic/slug (unique-slug (:name data) ctx)
+                                :topic/image (:id image)))]
+           (->> [topic
+                 image
+                 {:id (db/id)
+                  :admin/topic (:id topic)
+                  :admin/user (:creator data)}]
+                (db/save-multi! ctx)
+                first))))
 
 (defn update [data topic-id ctx]
-  (when-let [existing-topic (db/get-by-id ctx topic-id)]
-    (let [image (image/new-entity-from-data (:image data) ctx)
-          new-topic (-> existing-topic
-                           (merge (-> data
-                                      (select-keys (keys updatable-topic-keys))
-                                      (rename-keys updatable-topic-keys)))
-                           (clojure.core/update :topic/visibility keyword)
-                           (clojure.core/update :topic/type keyword)
-                           (assoc :topic/image (:id image)))]
-      (db/tx! ctx [(db/update new-topic existing-topic)
-                   (db/save image)])
-      new-topic)))
+  (db/tx ctx
+         (when-let [existing-topic (db/get-by-id ctx topic-id)]
+           (let [image (image/new-entity-from-data (:image data) ctx)
+                 new-topic (-> existing-topic
+                               (merge (-> data
+                                          (select-keys (keys updatable-topic-keys))
+                                          (rename-keys updatable-topic-keys)))
+                               (clojure.core/update :topic/visibility keyword)
+                               (clojure.core/update :topic/type keyword)
+                               (assoc :topic/image (:id image)))]
+             (db/submit! ctx [(db/update new-topic existing-topic)
+                              (db/save image)])
+             new-topic))))
 
 (defn get-by-slug [slug ctx]
   (db/get-by-attribute ctx :topic/slug slug))
@@ -104,7 +106,8 @@
        (map first)))
 
 (defn delete [ctx topic-id]
-  (->> [topic-id]
-       (concat (list-attached-ids ctx topic-id))
-       (concat (event/list-attached-ids-by-topic ctx topic-id))
-    (db/delete-by-ids! ctx)))
+  (db/tx ctx
+         (->> [topic-id]
+              (concat (list-attached-ids ctx topic-id))
+              (concat (event/list-attached-ids-by-topic ctx topic-id))
+              (db/delete-by-ids! ctx))))

@@ -12,13 +12,14 @@
                    :password :user/password})
 
 (defn create [data ctx]
-  (if (db/get-by-attribute ctx :user/email (:email data))
-    :duplicate-email
-    (-> data
-        (select-keys (keys user-key-map))
-        (rename-keys user-key-map)
-        (update :user/password #(when-not (empty? %) (auth/hash %)))
-        (db/create! ctx))))
+  (db/tx ctx
+         (if (db/get-by-attribute ctx :user/email (:email data))
+           :duplicate-email
+           (-> data
+               (select-keys (keys user-key-map))
+               (rename-keys user-key-map)
+               (update :user/password #(when-not (empty? %) (auth/hash %)))
+               (db/create! ctx)))))
 
 (defn get-by-id [ctx id]
   (db/get-by-id ctx id))

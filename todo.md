@@ -2,12 +2,6 @@
 
 ## Tech
 
-- save images separately
-
-- new crux version with new java version
-
-- have single transactor to guarantee constraints
-
 - image upload preview
 - [clear image input](https://www.w3schools.com/howto/howto_html_clear_input.asp)
 - edit views: keep image on update without image
@@ -128,6 +122,8 @@
   - sync form meetup.com
 - i18n
 - a11y
+
+- validate image dimension on server-side
 
 - data generation via API+specs
 - use API specs for generative testing

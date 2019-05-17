@@ -8,6 +8,7 @@
     [hiccup.core :refer [h]]
     [lde.web :refer [render escape-with-br multipart-image-to-data-uri image-mime-types]]
     [lde.core.event :as event]
+    [lde.core.image :as image]
     [lde.core.topic :as topic]
     [lde.core.user :as user]))
 
@@ -18,7 +19,7 @@
         max-attendees (:event/max-attendees event)
         user-joined (event/joined? ctx (:id event) (:id user))]
     [:div
-     (when-let [image (:event/image event)]
+     (when-let [image (image/get-by-hash (:event/image event) ctx)]
                [:img {:src image
                       :alt "event image"}])
      [:a {:href event-url}
@@ -82,7 +83,7 @@
        (:event/description event)]
       [:br]
       [:label "optional: Select an image"
-      (when-let [image (:event/image event)]
+      (when-let [image (image/get-by-hash (:event/image event) ctx)]
                 [:div
                  [:img {:src image
                         :alt "image"}]])

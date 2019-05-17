@@ -1,6 +1,7 @@
 (ns lde.db
   (:refer-clojure :exclude [update])
   (:require [clojure.set :refer [rename-keys]]
+            [clojure.core.async :as async]
             [crux.api :as crux]
             [crux.decorators.aggregation.alpha :as aggr])
   (:import [java.util UUID]
@@ -12,20 +13,45 @@
   ([path]
    (init {} path))
   ([ctx path]
-   (assoc ctx ::crux (crux/start-standalone-system
-                     {:kv-backend "crux.kv.rocksdb.RocksKv"
-                      :db-dir path}))))
+   (let [aquire (async/chan)
+         release (async/chan)]
+     (async/pipe release aquire)
+     (async/>!! release :ok)
+     (-> ctx
+        (assoc ::crux (crux/start-standalone-system
+                        {:kv-backend "crux.kv.rocksdb.RocksKv"
+                         :db-dir path})
+               ::aquire aquire
+               ::release release)))))
 
 (defn q [{:keys [::crux]} query]
   (crux/q (crux/db crux) query))
 
-(defn close [{:keys [::crux]}]
-  (.close crux))
+(defn close [{:keys [::crux ::release ::aquire]}]
+  (.close crux)
+  (async/close! release)
+  (async/<!! aquire))
 
 (defn- crux->id [x] (rename-keys x {:crux.db/id :id}))
 (defn- id->crux [x] (rename-keys x {:id :crux.db/id}))
 
-(defn tx!
+(comment
+  (def ctx (init "dbdb"))
+  (close ctx)
+  (tx ctx (str "a" "b"))
+)
+
+(defmacro tx [ctx & body]
+  (let [result (gensym 'result)
+        chan-response (gensym 'chan-response)]
+    `(let [~chan-response (async/<!! (::aquire ~ctx))]
+       (when (not= :ok ~chan-response)
+         (throw (Exception. "Transaction aborded. DB closed.")))
+       (let [~result ~@body]
+        (async/>!! (::release ~ctx) :ok)
+        ~result))))
+
+(defn submit!
   "Submit a transaction to the DB.
   Ignores nil items."
   [{:keys [::crux]} transaction-list]
@@ -44,7 +70,7 @@
 
 (defn save-multi! [ctx entitiy-list]
   (->> (save-multi entitiy-list)
-       (tx! ctx))
+       (submit! ctx))
   entitiy-list)
 
 (defn save [entity]
@@ -67,14 +93,14 @@
 
 (defn update! [new-entity previous-entity ctx]
   (->> [(update new-entity previous-entity)]
-       (tx! ctx))
+       (submit! ctx))
   new-entity)
 
 (defn set-key [k v]
   [:crux.tx/put k {:crux.db/id k :value v}])
 
 (defn set-key! [ctx k v]
-  (tx! ctx [(set-key k v)]))
+  (submit! ctx [(set-key k v)]))
 
 (defn delete-by-ids [ids]
   (->> ids
@@ -82,7 +108,7 @@
 
 (defn delete-by-ids! [ctx ids]
   (->> (delete-by-ids ids)
-       (tx! ctx)))
+       (submit! ctx)))
 
 (defn delete-by-id [id]
   (delete-by-ids [id]))
@@ -97,7 +123,7 @@
                                ['id attr value]) attrs)})
        (map first)
        (mapv #(vector :crux.tx/delete %))
-       (tx! ctx)))
+       (submit! ctx)))
 
 (defn list-by-attributes [{:keys [::crux]} attrs]
   (let [db (crux/db crux)]

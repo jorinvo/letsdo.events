@@ -46,33 +46,35 @@
       base)))
 
 (defn create [data ctx]
-  (let [image (image/new-entity-from-data (:image data) ctx)
-        event (-> data
-                  (select-keys (keys event-keys))
-                  (rename-keys event-keys)
-                  (assoc :id (db/id)
-                         :event/slug (unique-slug (:name data) ctx)
-                         :event/image (:id image)))
-        {intention :intention} data]
-  (->> [event
-        image
-        {:id (db/id)
-         (keyword intention "event") (:id event)
-         (keyword intention "user") (:event/creator event)}]
-       (db/save-multi! ctx)
-       first)))
+  (db/tx ctx
+         (let [image (image/new-entity-from-data (:image data) ctx)
+               event (-> data
+                         (select-keys (keys event-keys))
+                         (rename-keys event-keys)
+                         (assoc :id (db/id)
+                                :event/slug (unique-slug (:name data) ctx)
+                                :event/image (:id image)))
+               {intention :intention} data]
+           (->> [event
+                 image
+                 {:id (db/id)
+                  (keyword intention "event") (:id event)
+                  (keyword intention "user") (:event/creator event)}]
+                (db/save-multi! ctx)
+                first))))
 
 (defn update [data event-id ctx]
-  (when-let [existing-event (db/get-by-id ctx event-id)]
-    (let [image (image/new-entity-from-data (:image data) ctx)
-          new-event (-> existing-event
-                        (merge (-> data
-                                   (select-keys (keys updatable-event-keys))
-                                   (rename-keys updatable-event-keys)))
-                        (assoc :event/image (:id image)))]
-      (db/tx! ctx [(db/update new-event existing-event)
-                   (db/save image)])
-      new-event)))
+  (db/tx ctx
+         (when-let [existing-event (db/get-by-id ctx event-id)]
+           (let [image (image/new-entity-from-data (:image data) ctx)
+                 new-event (-> existing-event
+                               (merge (-> data
+                                          (select-keys (keys updatable-event-keys))
+                                          (rename-keys updatable-event-keys)))
+                               (assoc :event/image (:id image)))]
+             (db/submit! ctx [(db/update new-event existing-event)
+                              (db/save image)])
+             new-event))))
 
 (defn assoc-attendee-count [event ctx]
   (assoc event :event/attendee-count
@@ -112,34 +114,37 @@
                                 :organizer/user user-id}))
 
 (defn organize [ctx event-id user-id]
-  (cond
-    (organizer? ctx event-id user-id)
-    :already-organizer
+  (db/tx ctx
+         (cond
+           (organizer? ctx event-id user-id)
+           :already-organizer
 
-    :else
-    (-> {:organizer/event event-id
-         :organizer/user user-id}
-        (db/create! ctx))))
+           :else
+           (-> {:organizer/event event-id
+                :organizer/user user-id}
+               (db/create! ctx)))))
 
 (defn join [ctx event-id user-id]
-  (let [{:keys [:event/max-attendees :event/attendee-count]} (get-by-id ctx event-id)]
-    (cond
-      (joined? ctx event-id user-id)
-      :already-joined
+  (db/tx ctx
+         (let [{:keys [:event/max-attendees :event/attendee-count]} (get-by-id ctx event-id)]
+           (cond
+             (joined? ctx event-id user-id)
+             :already-joined
 
-      (and max-attendees (>= attendee-count max-attendees))
-      :full
+             (and max-attendees (>= attendee-count max-attendees))
+             :full
 
-      :else
-      (do (-> {:attendee/event event-id
-               :attendee/user user-id}
-              (db/create! ctx))
-          :ok))))
+             :else
+             (do (-> {:attendee/event event-id
+                      :attendee/user user-id}
+                     (db/create! ctx))
+                 :ok)))))
 
 (defn leave [ctx event-id user-id]
-  (let [attendee {:attendee/event event-id
-                  :attendee/user user-id}]
-    (db/delete-by-attributes! ctx attendee)))
+  (db/tx ctx
+         (let [attendee {:attendee/event event-id
+                         :attendee/user user-id}]
+           (db/delete-by-attributes! ctx attendee))))
 
 (defn list-attached-ids [ctx event-id]
   (->> (db/q ctx {:find ['?id]
@@ -150,7 +155,7 @@
        (map first)))
 
 (defn delete [ctx event-id]
-  (db/delete-by-ids! ctx (conj (list-attached-ids ctx event-id) event-id)))
+  (db/tx ctx (db/delete-by-ids! ctx (conj (list-attached-ids ctx event-id) event-id))))
 
 (defn list-attached-ids-by-topic [ctx topic-id]
   (->> (db/q ctx {:find ['?id]
