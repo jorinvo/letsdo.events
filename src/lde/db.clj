@@ -46,15 +46,16 @@
         chan-response (gensym 'chan-response)]
     `(let [~chan-response (async/<!! (::aquire ~ctx))]
        (when (not= :ok ~chan-response)
-         (throw (Exception. "Transaction aborded. DB closed.")))
+         (throw (Exception. "DB closed. Transaction aborded.")))
        (reset! (::transaction ~ctx) [])
-       (let [~result ~@body]
-         (->> @(::transaction ~ctx)
-              (filterv some?)
-              (crux/submit-tx (::crux ~ctx)))
-         (reset! (::transaction ~ctx) nil)
-         (async/>!! (::release ~ctx) :ok)
-         ~result))))
+       (try
+         (let [~result ~@body]
+           (->> @(::transaction ~ctx)
+                (filterv some?)
+                (crux/submit-tx (::crux ~ctx)))
+           (reset! (::transaction ~ctx) nil)
+           ~result)
+         (finally (async/>!! (::release ~ctx) :ok))))))
 
 (defn submit!
   "Submit a transaction to the DB.
@@ -141,12 +142,14 @@
   (count-by-attributes ctx {attr value}))
 
 (defn exists-by-id? [{:keys [::crux]} id]
-  (-> (crux/db crux)
-      (crux/q {:find '[?id]
-               :where [['?id :crux.db/id id]]})
-       first
-       nil?
-       not))
+  (if id
+    (-> (crux/db crux)
+        (crux/q {:find '[?id]
+                 :where [['?id :crux.db/id id]]})
+        first
+        nil?
+        not)
+    false))
 
 (defn exists-by-attributes [ctx attrs]
   (< 0 (count-by-attributes ctx attrs)))

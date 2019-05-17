@@ -1,10 +1,10 @@
 # letsdo.events
 
-## Tech
+- allow passing delete flag
 
+- edit views: keep image on update without image
 - image upload preview
 - [clear image input](https://www.w3schools.com/howto/howto_html_clear_input.asp)
-- edit views: keep image on update without image
 
 - production setup
   - main

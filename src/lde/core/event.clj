@@ -20,7 +20,6 @@
                  :start-time :event/start-time
                  :end-date :event/end-date
                  :end-time :event/end-time
-                 :image :event/image
                  :creator :event/creator
                  :topic :event/topic})
 
@@ -32,8 +31,7 @@
                            :start-date
                            :start-time
                            :end-date
-                           :end-time
-                           :image]))
+                           :end-time]))
 
 (defn- unique-slug [event-name ctx]
   (let [base (cuerdas/slug event-name)]
@@ -71,9 +69,10 @@
                                (merge (-> data
                                           (select-keys (keys updatable-event-keys))
                                           (rename-keys updatable-event-keys)))
-                               (assoc :event/image (:id image)))]
+                               (clojure.core/update :event/image #(if image (:id image) %)))]
              (db/update! new-event existing-event ctx)
-             (db/save! image ctx)
+             (when-not (image/exists-by-hash? (:id image) ctx)
+               (db/save! image ctx))
              new-event))))
 
 (defn assoc-attendee-count [event ctx]

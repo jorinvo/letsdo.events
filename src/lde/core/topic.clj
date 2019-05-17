@@ -8,12 +8,12 @@
     [lde.core.event :as event]))
 
 (def visibilities (array-map
-                  :public
-                  {:label "Anyone can see and participate in this topic"}
-                  :invite
-                  {:label "You need to be invited to topic"}
-                  :request
-                  {:label "You can request to join this topic"}))
+                    :public
+                    {:label "Anyone can see and participate in this topic"}
+                    :invite
+                    {:label "You need to be invited to topic"}
+                    :request
+                    {:label "You can request to join this topic"}))
 
 (def types (array-map
              :activities
@@ -52,8 +52,7 @@
   (select-keys topic-keys [:name
                            :type
                            :visibility
-                           :description
-                           :image]))
+                           :description]))
 
 (defn create [data ctx]
   (db/tx ctx
@@ -84,8 +83,9 @@
                                           (rename-keys updatable-topic-keys)))
                                (clojure.core/update :topic/visibility keyword)
                                (clojure.core/update :topic/type keyword)
-                               (assoc :topic/image (:id image)))]
-             (db/update! new-topic existing-topic ctx)
+                               (clojure.core/update :topic/image  #(if image (:id image) %)))]
+             (when-not (image/exists-by-hash? (:id image) ctx)
+               (db/update! new-topic existing-topic ctx))
              (db/save! image ctx)
              new-topic))))
 

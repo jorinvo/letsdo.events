@@ -18,8 +18,3 @@
     (let [hash-id (-> data hash/sha256 bytes->hex keyword)]
       {:id hash-id
        :image/data data})))
-
-     (comment (when-not (exists-by-hash? hash-id ctx)
-             {:id hash-id
-              :image/data data}))
-
