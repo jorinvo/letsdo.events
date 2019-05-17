@@ -85,8 +85,8 @@
                                (clojure.core/update :topic/visibility keyword)
                                (clojure.core/update :topic/type keyword)
                                (assoc :topic/image (:id image)))]
-             (db/submit! ctx [(db/update new-topic existing-topic)
-                              (db/save image)])
+             (db/update! new-topic existing-topic ctx)
+             (db/save! image ctx)
              new-topic))))
 
 (defn get-by-slug [slug ctx]

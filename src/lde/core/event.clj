@@ -72,8 +72,8 @@
                                           (select-keys (keys updatable-event-keys))
                                           (rename-keys updatable-event-keys)))
                                (assoc :event/image (:id image)))]
-             (db/submit! ctx [(db/update new-event existing-event)
-                              (db/save image)])
+             (db/update! new-event existing-event ctx)
+             (db/save! image ctx)
              new-event))))
 
 (defn assoc-attendee-count [event ctx]

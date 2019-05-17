@@ -1,5 +1,4 @@
 (ns lde.db
-  (:refer-clojure :exclude [update])
   (:require [clojure.set :refer [rename-keys]]
             [clojure.core.async :as async]
             [crux.api :as crux]
@@ -18,11 +17,12 @@
      (async/pipe release aquire)
      (async/>!! release :ok)
      (-> ctx
-        (assoc ::crux (crux/start-standalone-system
-                        {:kv-backend "crux.kv.rocksdb.RocksKv"
-                         :db-dir path})
-               ::aquire aquire
-               ::release release)))))
+         (assoc ::crux (crux/start-standalone-system
+                         {:kv-backend "crux.kv.rocksdb.RocksKv"
+                          :db-dir path})
+                ::aquire aquire
+                ::release release
+                ::transaction (atom nil))))))
 
 (defn q [{:keys [::crux]} query]
   (crux/q (crux/db crux) query))
@@ -47,71 +47,56 @@
     `(let [~chan-response (async/<!! (::aquire ~ctx))]
        (when (not= :ok ~chan-response)
          (throw (Exception. "Transaction aborded. DB closed.")))
+       (reset! (::transaction ~ctx) [])
        (let [~result ~@body]
-        (async/>!! (::release ~ctx) :ok)
-        ~result))))
+         (->> @(::transaction ~ctx)
+              (filterv some?)
+              (crux/submit-tx (::crux ~ctx)))
+         (reset! (::transaction ~ctx) nil)
+         (async/>!! (::release ~ctx) :ok)
+         ~result))))
 
 (defn submit!
   "Submit a transaction to the DB.
   Ignores nil items."
-  [{:keys [::crux]} transaction-list]
-  (->> transaction-list
-       (filterv some?)
-       (crux/submit-tx crux)))
+  [ctx transaction]
+  (swap! (::transaction ctx)
+         #(if (nil? %)
+            (throw (Exception. "DB writes must be wrapped transaction"))
+            (concat % transaction))))
 
-(defn save-multi
-  "Creates a transaction-list for a list of entities.
+(defn save-multi!
+  "Creates a transaction for a list of entities.
   Each must have an :id.
   Ignores nil items."
-  [entitiy-list]
+  [ctx entitiy-list]
   (->> entitiy-list
        (filterv some?)
-       (mapv #(vector :crux.tx/put (:id %) (id->crux %)))))
-
-(defn save-multi! [ctx entitiy-list]
-  (->> (save-multi entitiy-list)
+       (mapv #(vector :crux.tx/put (:id %) (id->crux %)))
        (submit! ctx))
   entitiy-list)
 
-(defn save [entity]
-  (first (save-multi [entity])))
-
-(defn save! [entity]
-  (first (save-multi! [entity])))
-
-(defn create [entity]
-  (first (save-multi [(assoc entity :id (id))])))
+(defn save! [entity ctx]
+  (first (save-multi! ctx [entity])))
 
 (defn create! [entity ctx]
   (first (save-multi! ctx [(assoc entity :id (id))])))
 
-(defn update [new-entity previous-entity]
-  [:crux.tx/cas
-   (:id new-entity)
-   (id->crux previous-entity)
-   (id->crux new-entity)])
-
 (defn update! [new-entity previous-entity ctx]
-  (->> [(update new-entity previous-entity)]
+  (->> [[:crux.tx/cas
+         (:id new-entity)
+         (id->crux previous-entity)
+         (id->crux new-entity)]]
        (submit! ctx))
   new-entity)
 
-(defn set-key [k v]
-  [:crux.tx/put k {:crux.db/id k :value v}])
-
 (defn set-key! [ctx k v]
-  (submit! ctx [(set-key k v)]))
-
-(defn delete-by-ids [ids]
-  (->> ids
-       (mapv #(vector :crux.tx/delete %))))
+  (submit! ctx [[:crux.tx/put k {:crux.db/id k :value v}]]))
 
 (defn delete-by-ids! [ctx ids]
-  (->> (delete-by-ids ids)
+  (->> ids
+       (mapv #(vector :crux.tx/delete %))
        (submit! ctx)))
-
-(defn delete-by-id [id]
-  (delete-by-ids [id]))
 
 (defn delete-by-id! [id ctx]
   (delete-by-ids! ctx [id]))
