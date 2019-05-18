@@ -135,7 +135,8 @@
       attendees
       (if (= attendees 1) " attendee" " attendees")
       [:br]
-      [:button.btn {:type "submit"} "Update " (topic/singular topic)]]
+      [:button.btn {:type "submit"} "Update " (topic/singular topic)]
+      [:a {:href (str "/for/" (:topic/slug topic))} "Cancel"]]
      [:form {:action (str url "/delete") :method "post"}
               [:button.btn {:type "submit"} "Delete " (topic/singular topic)]]]))
 
@@ -149,6 +150,7 @@
         topic-url (str "/for/" topic-slug)
         user (user/get-by-id ctx (:id session))]
     (render
+      ctx
       {:title title
        :description "hi"}
       [:div
@@ -167,6 +169,7 @@
         topic (topic/get-by-slug (:topic path-params) ctx)
         title (str "Plan a new " (str/lower-case (topic/singular topic)))]
     (render
+      ctx
       {:title title
        :description "Hi"}
       [:div

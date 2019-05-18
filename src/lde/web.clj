@@ -7,7 +7,7 @@
 
 (def image-mime-types #{"image/png" "image/jpeg"})
 
-(defn render [options content]
+(defn render [ctx options content]
   {:status 200
    :headers {"content-type" "text/html"}
    :body (html {:mode :html}
@@ -17,8 +17,10 @@
                   [:meta {:charset "utf-8"}]
                   [:meta {:content (:description options) :name "description"}]
                   [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-                  (include-css
-                    "/css/main.css")]
+                  (include-css "/css/main.css")
+                  ; cannot use include-css since google fonts use | char which is not valid in a Java URI object
+                  (for [style (-> ctx :config :style :additional-stylesheets)]
+    [:link {:type "text/css", :href style, :rel "stylesheet"}])]
                  [:body {}
                   [:div.container content]
                   (include-js "/js/script.js")]))})

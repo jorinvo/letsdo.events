@@ -1,15 +1,5 @@
 # letsdo.events
 
-- design
-  - options via config
-    - background-color
-    - primary-color
-    - text-color
-    - title-font
-    - base-font
-
-- list view: no join for events you organize or when there is no organizer yet
-
 - sorting of event list
 - event listing filters
 - event listing search
@@ -19,6 +9,8 @@
 - redirect empty /for and /about one up
 - redirect unauthorized to login with redirect URI
     letsdo.events/login?goto=heart-of-clojure/about/cljdoc-hacking
+
+- put server in ctx
 
 - allow editing slug and check for conflicts
 - image resizing

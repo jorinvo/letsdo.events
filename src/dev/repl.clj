@@ -20,7 +20,8 @@
 (def config (get-config))
 
 (defn make-context []
-  (db/init (:db-dir config)))
+  (-> {:config config}
+      (db/init)))
 
 (defonce ctx (atom (make-context)))
 

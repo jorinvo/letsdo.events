@@ -8,21 +8,18 @@
 
 (defn id [] (UUID/randomUUID))
 
-(defn init
-  ([path]
-   (init {} path))
-  ([ctx path]
-   (let [aquire (async/chan)
-         release (async/chan)]
-     (async/pipe release aquire)
-     (async/>!! release :ok)
-     (-> ctx
-         (assoc ::crux (crux/start-standalone-system
-                         {:kv-backend "crux.kv.rocksdb.RocksKv"
-                          :db-dir path})
-                ::aquire aquire
-                ::release release
-                ::transaction (atom nil))))))
+(defn init [ctx]
+  (let [aquire (async/chan)
+        release (async/chan)]
+    (async/pipe release aquire)
+    (async/>!! release :ok)
+    (-> ctx
+        (assoc ::crux (crux/start-standalone-system
+                        {:kv-backend "crux.kv.rocksdb.RocksKv"
+                         :db-dir (-> ctx :config :db-dir)})
+               ::aquire aquire
+               ::release release
+               ::transaction (atom nil)))))
 
 (defn q [{:keys [::crux]} query]
   (crux/q (crux/db crux) query))

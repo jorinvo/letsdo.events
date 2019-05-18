@@ -15,6 +15,7 @@
 (defn new [req]
   (let [path (-> req get-match match->path)]
     (render
+      (:ctx req)
       {:title "Setup New Topic"
        :description "Hi"}
       [:div
@@ -71,6 +72,7 @@
         topic (topic/get-by-slug topic-slug ctx)
         url (str "/for/" topic-slug)]
     (render
+      ctx
       {:title "Edit Topic"
        :description "Hi"}
       [:div
@@ -155,7 +157,8 @@
         event-url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
         attendees (:event/attendee-count event)
         max-attendees (:event/max-attendees event)
-        user-joined (event/joined? ctx (:id event) (:id user))]
+        user-joined (event/joined? ctx (:id event) (:id user))
+        user-is-organizer (event/organizer? ctx (:id event) (:id user))]
     [:div
      (when-let [image (image/get-by-hash (:event/image event) ctx)]
                [:img {:src image
@@ -187,7 +190,7 @@
        (and max-attendees (>= attendees max-attendees))
        [:span " No spot left!"]
 
-       :else
+       (not user-is-organizer)
        [:form {:action (str event-url "/join") :method "post"}
         [:button.btn {:type "submit"} "Join " (topic/singular topic)]])]))
 
@@ -196,22 +199,24 @@
         topic-url (str "/for/" (:topic path-params))
         events (event/list-by-topic (:id topic) ctx)
         user (user/get-by-id ctx (:id session))]
-    (render {:title (:topic/name topic)
-             :description "Hi"}
-            [:div
-             [:a {:href topic-url}
-              (when-let [image (image/get-by-hash (:topic/image topic) ctx)]
-                [:img {:src image
-                       :alt "logo"}])
-              [:h1 (:topic/name topic)]]
-             [:h2 (:topic/description topic)]
-             (when (topic/admin? ctx (:id topic) (:id user))
-               [:a {:href (str "/for/" (:topic/slug topic) "/edit")}
-               "Edit Meta"])
-             [:div
-              [:a {:href (str "/for/" (:topic/slug topic) "/new")}
-               "New " (topic/singular topic)]]
-             [:ul.overview-list (map #(vector :li (event-item % topic user ctx)) events)]])))
+    (render
+      ctx
+      {:title (:topic/name topic)
+       :description "Hi"}
+      [:div
+       [:a {:href topic-url}
+        (when-let [image (image/get-by-hash (:topic/image topic) ctx)]
+          [:img {:src image
+                 :alt "logo"}])
+        [:h1 (:topic/name topic)]]
+       [:h2 (:topic/description topic)]
+       (when (topic/admin? ctx (:id topic) (:id user))
+         [:a {:href (str "/for/" (:topic/slug topic) "/edit")}
+          "Edit Meta"])
+       [:div
+        [:a {:href (str "/for/" (:topic/slug topic) "/new")}
+         "New " (topic/singular topic)]]
+       [:ul.overview-list (map #(vector :li (event-item % topic user ctx)) events)]])))
 
 (defn delete [{:keys [ctx path-params]}]
   (let [topic-id (:id (topic/get-by-slug (:topic path-params) ctx))]

@@ -23,6 +23,7 @@
 (defn handler [req]
   (let [path (-> req get-match match->path)]
       (render
+        (:ctx req)
         {:title "Login"
          :description "Hi"}
         [:div.login-container {:class (subs path 1)}
@@ -94,6 +95,7 @@
 
 (defn mail-confirm [req]
   (render
+    (:ctx req)
     {:title "Login link sent"
      :description "Hi"}
     [:div
