@@ -1,7 +1,7 @@
 (ns lde.web
   (:require [clojure.string :as str]
             [hiccup.core :refer [html h]]
-            [hiccup.page :refer [include-css]]
+            [hiccup.page :refer [html5 include-css include-js]]
             [buddy.core.codecs.base64 :as base64]
             [buddy.core.codecs :refer [bytes->str str->bytes]]))
 
@@ -11,16 +11,17 @@
   {:status 200
    :headers {"content-type" "text/html"}
    :body (html {:mode :html}
-               [:html
-                [:head
-                 [:title (:title options)]
-                 [:meta {:charset "utf-8"}]
-                 [:meta {:content (:description options) :name "description"}]
-                 [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
-                 (include-css
-                   "/css/main.css")]
-                [:body {}
-                 [:div.container content]]])})
+               (html5
+                 [:head
+                  [:title (:title options)]
+                  [:meta {:charset "utf-8"}]
+                  [:meta {:content (:description options) :name "description"}]
+                  [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
+                  (include-css
+                    "/css/main.css")]
+                 [:body {}
+                  [:div.container content]
+                  (include-js "/js/script.js")]))})
 
 (defn escape-with-br [s]
   (str/replace (h s) #"(\r\n|\r|\n)" "<br>"))

@@ -17,10 +17,11 @@
     [lde.core.topic :as topic]
     [lde.config :refer [get-config]]))
 
-(def config (get-config "config.dev.edn"))
+(def config {:port 3000
+             :db-dir "./db"})
 
 (defn make-context []
-  (db/init "./db"))
+  (db/init (:db-dir config)))
 
 (defonce ctx (atom (make-context)))
 

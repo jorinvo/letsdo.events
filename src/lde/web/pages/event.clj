@@ -28,7 +28,7 @@
        (str " by " (str/join ", " (map #(if (empty? %) "Anonymous" %) organizer-names)))
        [:div "there is no organizer yet! can you take over?"
         [:form {:action (str event-url "/organize") :method "post"}
-        [:button {:type "submit"} "Organize " (topic/singular topic)]]])
+        [:button.btn {:type "submit"} "Organize " (topic/singular topic)]]])
      [:div
       "starting " (:event/start-date event) " at " (:event/start-time event)
       ", until " (:event/end-date event) " at " (:event/end-time event)]
@@ -44,14 +44,14 @@
        [:div
         [:span " - including you!"]
         [:form {:action (str event-url "/leave") :method "post"}
-         [:button {:type "submit"} "Leave " (topic/singular topic)]]]
+         [:button.btn {:type "submit"} "Leave " (topic/singular topic)]]]
 
        (and max-attendees (>= attendees max-attendees))
        [:span " No spot left!"]
 
        :else
        [:form {:action (str event-url "/join") :method "post"}
-        [:button {:type "submit"} "Join " (topic/singular topic)]])]))
+        [:button.btn {:type "submit"} "Join " (topic/singular topic)]])]))
 
 (defn edit-event [event topic user ctx]
   (let [url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
@@ -80,16 +80,21 @@
         :rows 10
         :cols 50}
        (:event/description event)]
-      [:br]
-      [:label "optional: Select an image"
-      (when-let [image (image/get-by-hash (:event/image event) ctx)]
-                [:div
-                 [:img {:src image
-                        :alt "image"}]])
-       [:input {:type "file"
-                :name "image"
-                :accept (str/join ", " image-mime-types)}]]
-      [:br]
+      (let [image (image/get-by-hash (:event/image event) ctx)]
+        [:div
+         [:label "optional: Select an image"
+          [:div [:img#image-upload-preview {:src image
+                                            :alt "logo"
+                                            :class (when-not image "hide")}]
+           [:span#image-upload-message.btn {:class (when image "hide")}
+            "click to select image"]]
+          [:input#image-upload-input {:type "file"
+                                      :name "image"
+                                      :accept (str/join ", " image-mime-types)
+                                      :class "hide"}]]
+         [:input#delete-image-input {:type "hidden"
+                                     :name "delete-image"}]
+         [:span#image-upload-clear.btn {:class (when-not image "hide")} "remove image"]])
       "When "
       [:br]
       "Starting: "
@@ -130,9 +135,9 @@
       attendees
       (if (= attendees 1) " attendee" " attendees")
       [:br]
-      [:button {:type "submit"} "Update " (topic/singular topic)]]
+      [:button.btn {:type "submit"} "Update " (topic/singular topic)]]
      [:form {:action (str url "/delete") :method "post"}
-              [:button {:type "submit"} "Delete " (topic/singular topic)]]]))
+              [:button.btn {:type "submit"} "Delete " (topic/singular topic)]]]))
 
 (defn get [{:keys [ctx path-params session]}]
   (let [topic-slug (:topic path-params)
@@ -191,12 +196,16 @@
                     :rows 10
                     :cols 50
                     }]
-        [:br]
-        [:label "optional: Select an image"
-         [:input {:type "file"
-                  :name "image"
-                  :accept (str/join ", " image-mime-types)}]]
-        [:br]
+        [:div
+         [:label "optional: Select an image"
+          [:div [:img#image-upload-preview {:alt "logo"
+                                            :class "hide"}]
+           [:span#image-upload-message.btn "click to select image"]]
+          [:input#image-upload-input {:type "file"
+                                      :name "image"
+                                      :accept (str/join ", " image-mime-types)
+                                      :class "hide"}]]
+         [:span#image-upload-clear.btn {:class "hide"} "remove image"]]
         "When "
         [:br]
         "Starting: "
@@ -227,7 +236,7 @@
                   :min 1
                   :step 1}]]
         [:br]
-        [:button {:type "submit"} "Create " (topic/singular topic)]
+        [:button.btn {:type "submit"} "Create " (topic/singular topic)]
         " "
         [:a {:href (str "/for/" (:topic/slug topic))} "Cancel"]]])))
 
@@ -256,6 +265,7 @@
                                                   nil
                                                   (Integer/parseInt %)))
                   (update :image multipart-image-to-data-uri)
+                  (update :delete-image #(= "true" %))
                   (event/update event-id ctx))
         url (str "/for/" topic-slug "/about/" (:event/slug event))]
     (response/redirect url :see-other)))

@@ -60,8 +60,8 @@
                      :name "link"
                      :placeholder "Link"}]]]
           [:div.form-field
-           [:button.login-button {:type "submit"} "Login"]
-           [:button.signup-button {:type "submit"} "Signup"]]]])))
+           [:button.btn.login-button {:type "submit"} "Login"]
+           [:button.btn.signup-button {:type "submit"} "Signup"]]]])))
 
 (defn post-login [{:keys [ctx params]}]
   (let [password (:password params)]

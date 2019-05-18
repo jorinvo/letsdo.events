@@ -77,16 +77,20 @@
   (db/tx ctx
          (when-let [existing-topic (db/get-by-id ctx topic-id)]
            (let [image (image/new-entity-from-data (:image data) ctx)
+                 delete-image (:delete-image data)
+                 previous-image-id (:topic/image existing-topic)
                  new-topic (-> existing-topic
                                (merge (-> data
                                           (select-keys (keys updatable-topic-keys))
                                           (rename-keys updatable-topic-keys)))
                                (clojure.core/update :topic/visibility keyword)
                                (clojure.core/update :topic/type keyword)
-                               (clojure.core/update :topic/image  #(if image (:id image) %)))]
-             (when-not (image/exists-by-hash? (:id image) ctx)
-               (db/update! new-topic existing-topic ctx))
-             (db/save! image ctx)
+                               (clojure.core/update :topic/image  #(cond delete-image nil
+                                                                         image (:id image)
+                                                                         :else %)))]
+             (db/update! new-topic existing-topic ctx)
+             (when-not (or delete-image (image/exists-by-hash? (:id image) ctx))
+               (db/save! image ctx))
              new-topic))))
 
 (defn get-by-slug [slug ctx]

@@ -1,16 +1,9 @@
 # letsdo.events
 
-- allow passing delete flag
-
-- edit views: keep image on update without image
-- image upload preview
-- [clear image input](https://www.w3schools.com/howto/howto_html_clear_input.asp)
-
 - production setup
   - main
   - config file
   - teardown
-  - db location from config
   - config defaults
   - spec for config
   - production router
@@ -43,6 +36,8 @@
 
 - list public topics on /
 
+- crop image size in browser
+
 - use same data for schema and for key selection
 
 - allow app to be running at sub-route instead of top level
@@ -54,6 +49,8 @@
   - repair on read: in case an image cannot be found, it must be restored from history
 
 - HTTPS via letsencrypt support
+
+- drag&drop image upload
 
 - allow adding and removing organizers
 
@@ -97,6 +94,12 @@
 
 - handle display of multiple anonymous organizers
 
+- how to delete unused images?
+
+- manifold vs core.async for transaction
+
+- edit view: image hover
+
 - request joining topic
 - anyone can join/invite only
 - invite
@@ -110,6 +113,8 @@
 - confirm() before unjoin
 
 - setup possible dates
+
+- caching headers
 
 - Gravatar
 - API keys

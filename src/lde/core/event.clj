@@ -65,13 +65,17 @@
   (db/tx ctx
          (when-let [existing-event (db/get-by-id ctx event-id)]
            (let [image (image/new-entity-from-data (:image data) ctx)
+           delete-image (:delete-image data)
+           previous-image-id (:event/image existing-event)
                  new-event (-> existing-event
                                (merge (-> data
                                           (select-keys (keys updatable-event-keys))
                                           (rename-keys updatable-event-keys)))
-                               (clojure.core/update :event/image #(if image (:id image) %)))]
+                               (clojure.core/update :event/image  #(cond delete-image nil
+                                                                         image (:id image)
+                                                                         :else %)))]
              (db/update! new-event existing-event ctx)
-             (when-not (image/exists-by-hash? (:id image) ctx)
+             (when-not (or delete-image (image/exists-by-hash? (:id image) ctx))
                (db/save! image ctx))
              new-event))))
 

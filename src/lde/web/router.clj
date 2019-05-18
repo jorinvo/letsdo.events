@@ -16,6 +16,7 @@
             [lde.core.event :as event]
             [lde.web :as web]
             [lde.web.css :as css]
+            [lde.web.js :as js]
             [lde.web.pages.topic :as topic-page]
             [lde.web.pages.event :as event-page]
             [lde.web.pages.home :as home]
@@ -143,6 +144,7 @@
 
 (defn routes []
   [["/css/main.css" {:get css/handler}]
+   ["/js/script.js" {:get js/handler}]
    ["/" {:get home/handler}]
    ["/login"
     ["" {:get login/handler
@@ -171,7 +173,8 @@
                                               :description string?
                                               :type #(contains? topic/types (keyword %))
                                               :visibility #(contains? topic/visibilities (keyword %))
-                                              :image ::image}}}}]
+                                              :image ::image
+                                              :delete-image string?}}}}]
     ["/delete" {:post topic-page/delete}]
     ["/new" {:get event-page/new
              :post {:handler event-page/post
@@ -196,7 +199,8 @@
                                                :end-time opt-time
                                                :max-attendees ::max-attendees
                                                :location string?
-                                               :image ::image}}}}]
+                                               :image ::image
+                                               :delete-image string?}}}}]
      ["/organize" {:post event-page/organize}]
      ["/join" {:post event-page/join}]
      ["/leave" {:post event-page/leave}]
