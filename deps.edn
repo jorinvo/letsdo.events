@@ -12,7 +12,8 @@
         clojure.java-time {:mvn/version "0.3.2"}
         funcool/cuerdas {:mvn/version "2.2.0"}
         juxt/crux {:mvn/version "19.04-1.0.3-alpha"}
-        org.rocksdb/rocksdbjni {:mvn/version "5.17.2"}}
+        org.rocksdb/rocksdbjni {:mvn/version "5.17.2"}
+        spootnik/signal {:mvn/version "0.2.1"}}
  :paths ["src" "resources"]
  :aliases {:dev {:extra-deps {cider/cider-nrepl {:mvn/version "0.21.1"}}
                  :main-opts ["-m" "dev.repl"]}}}

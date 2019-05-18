@@ -1,14 +1,5 @@
 # letsdo.events
 
-- production setup
-  - main
-  - config file
-  - teardown
-  - config defaults
-  - spec for config
-  - production router
-  - package as uberjar
-
 - design
   - options via config
     - background-color
@@ -39,6 +30,9 @@
 - crop image size in browser
 
 - use same data for schema and for key selection
+
+- spec for config
+- package as uberjar
 
 - allow app to be running at sub-route instead of top level
 - catch errors and never show to client

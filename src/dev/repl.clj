@@ -17,8 +17,7 @@
     [lde.core.topic :as topic]
     [lde.config :refer [get-config]]))
 
-(def config {:port 3000
-             :db-dir "./db"})
+(def config (get-config))
 
 (defn make-context []
   (db/init (:db-dir config)))
