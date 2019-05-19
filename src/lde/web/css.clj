@@ -52,10 +52,13 @@
        {:cursor "pointer"
         :background primary-color
         :outline :none
-        :color background-color}]]
-     [:.hide {:display :none}]
+        :color background-color}]
+      [:&.btn-small
+       {:font-size "0.7rem"}]]
+     [:.hide {:display "none !important"}]
      [:.container
-      {:margin-left :auto
+      {:margin-top "3rem"
+       :margin-left :auto
        :margin-right :auto
        :padding-left "1rem"
        :padding-right "1rem"
@@ -66,7 +69,7 @@
             :padding "0.5rem 0"}]]
      [:ul.overview-list
       {}]
-     [:input
+     [:.input-field
       {:font-size "1rem"
        :margin "0.2rem 0"
        :padding "0.4rem 0.6rem"
@@ -74,6 +77,13 @@
        :max-width "100%"
        :width "15rem"}
       [:&:required {:box-shadow :none}]]
+     [:.radio
+      {:display :block
+       :margin-top "0.5rem"}
+      [:input
+       {:margin-right "1rem"}
+       [:&:required
+        {:box-shadow :none}]]]
      [:.form-field
       {:padding "0.7rem 0"}]
      [:.login-container
@@ -87,7 +97,19 @@
       [:&.signup
        [:.signup-heading {:text-decoration :underline}]
        [:.login-button {:display :none}]]]
-     [:#image-upload-preview {:max-width "100%" :max-height "500px"}]]))
+     [:#image-upload-message
+      {:margin "1.2rem 0 0.2rem 0"
+       :display :inline-block}]
+     [:#image-upload-preview
+      {:margin "1.2rem 0"
+       :max-width "100%"
+       :max-height "500px"}]
+     [:.cancel
+      {:margin-left "1rem"}]
+     [:.logo
+      {:max-width "100%"
+       :max-height "500px"
+       :margin "1rem 0"}]]))
 
 (defn handler [req]
   {:status 200

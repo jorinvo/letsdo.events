@@ -40,25 +40,25 @@
          [:form {:action path :method "post"}
           [:div.form-field.name-field
            [:label [:div "Name"]
-            [:input {:type "text"
+            [:input.input-field {:type "text"
                      :name "name"}]]]
           [:div.form-field
            [:label
             [:div "Email" [:sup " *"]]
-            [:input {:type "email"
+            [:input.input-field {:type "email"
                      :name "email"
                      :required true}]]]
           [:div.form-field
            [:label
             [:div "Password"]
             [:div
-             [:input {:type "password"
+             [:input.input-field {:type "password"
                       :name "password"}]]
           [:small "No need for a password, you get a mail instead"]]]
           [:div.form-field.link-field
            [:label
             [:div "Link to your website / social media / ..."]
-            [:input {:type "text"
+            [:input.input-field {:type "text"
                      :name "link"}]]]
           [:div.form-field
            [:button.btn.login-button {:type "submit"} "Login"]

@@ -19,23 +19,22 @@
       {:title "Setup New Topic"
        :description "Hi"}
       [:div
-       [:h1.f1
+       [:h1
         "Setup new topic"]
        [:form {:action path
                :method "post"
                :enctype "multipart/form-data"}
-        [:label "Topic name: "
-         [:input {:type "text"
-                  :name "name"
-                  :required true
-                  :placeholder "Topic name"}]]
-        [:br]
-        [:label "Description: "
-         [:input {:type "text"
-                  :name "description"
-                  :placeholder "Description"}]]
-        [:div
-         [:label "optional: Select a logo"
+        [:div.form-field
+         [:label [:div "Topic name" [:sup " *"]]
+          [:input.input-field {:type "text"
+                               :name "name"
+                               :required true}]]]
+        [:div.form-field
+         [:label [:div "Description"]
+          [:input.input-field {:type "text"
+                   :name "description"}]]]
+        [:div.form-field.image-upload
+         [:label [:div "Select a logo"]
           [:div [:img#image-upload-preview { :alt "logo"
                                             :class "hide"}]
            [:span#image-upload-message.btn "click to select image"]]
@@ -57,19 +56,17 @@
                               :value value}]
                      label
                      [:br]])))
-        [:span {} "This topic is about: "]
-        (->> topic/types
-             (map (fn [[value {label :plural}]]
-                    [:label
-                     [:input {:type "radio"
-                              :name "type"
-                              :required true
-                              :value value}]
-                     " " label " "])))
-        [:br]
+        [:div.form-field
+         [:div "This topic is about" [:sup " *"]]
+         (for [[value {label :plural}] topic/types]
+           [:label.radio
+            [:input {:type "radio"
+                     :name "type"
+                     :required true
+                     :value value}]
+            label])]
         [:button.btn {:type "submit"} "Create Topic"]
-        " "
-        [:a {:href "/"} "Cancel"]]])))
+        [:a.cancel {:href "/"} "Cancel"]]])))
 
 (defn edit [{:keys [path-params ctx]}]
   (let [topic-slug (:topic path-params)
@@ -85,25 +82,26 @@
        [:form {:action (str url "/edit")
                :method "post"
                :enctype "multipart/form-data"}
-        [:label "Topic name: "
-         [:input {:type "text"
-                  :name "name"
-                  :value (:topic/name topic)
-                  :required true
-                  :placeholder "Topic name"}]]
-        [:br]
-        [:label "Description: "
-         [:input {:type "text"
-                  :name "description"
-                  :value (:topic/description topic)
-                  :placeholder "Description"}]]
+        [:div.form-field
+         [:label [:div "Topic name" [:sup " *"]]
+          [:input.input-field {:type "text"
+                               :name "name"
+                               :value (:topic/name topic)
+                               :required true}]]]
+        [:div.form-field
+         [:label [:div "Description"]
+          [:input.input-field {:type "text"
+                               :name "description"
+                               :value (:topic/description topic)}]]]
         (let [image (image/get-by-hash (:topic/image topic) ctx)]
-          [:div
-           [:label "optional: Select a logo"
-            [:div [:img#image-upload-preview {:src image
-                                              :alt "logo"
-                                              :class (when-not image "hide")}]
-             [:span#image-upload-message.btn {:class (when image "hide")}
+          [:div.form-field.image-upload
+           [:label [:div "Select a logo"]
+            [:div [:img#image-upload-preview
+                   {:src image
+                    :alt "logo"
+                    :class (when-not image "hide")}]
+             [:span#image-upload-message.btn
+              {:class (when image "hide")}
               "click to select image"]]
             [:input#image-upload-input {:type "file"
                                         :name "image"
@@ -128,21 +126,20 @@
                      label
                      [:br]])))
         [:span {} "This topic is about: "]
-        (->> topic/types
-             (map (fn [[value {label :plural}]]
-                    [:label
-                     [:input {:type "radio"
-                              :name "type"
-                              :required true
-                              :checked (= value (:topic/type topic))
-                              :value value}]
-                     " " label " "])))
+        (for [[value {label :plural}] topic/types]
+          [:label.radio
+           [:input {:type "radio"
+                    :name "type"
+                    :required true
+                    :checked (= value (:topic/type topic))
+                    :value value}]
+                     label])
         [:br]
         [:button.btn {:type "submit"} "Update Topic"]
         " "
-        [:a {:href (str "/for/" topic-slug)} "Cancel"]]
+        [:a.cancel {:href (str "/for/" topic-slug)} "Cancel"]]
        [:form {:action (str url "/delete") :method "post"}
-        [:button.btn {:type "submit"} "Delete topic"]]])))
+        [:button.btn.btn-small {:type "submit"} "Delete Topic"]]])))
 
 (defn post [{:keys [ctx session parameters]}]
   (let [topic (-> (:multipart parameters)
@@ -213,10 +210,10 @@
        :description "Hi"}
       [:div
        [:a {:href topic-url}
-        (when-let [image (image/get-by-hash (:topic/image topic) ctx)]
-          [:img {:src image
-                 :alt "logo"}])
         [:h1 (:topic/name topic)]]
+       (when-let [image (image/get-by-hash (:topic/image topic) ctx)]
+         [:img.logo {:src image
+                     :alt "logo"}])
        [:h2 (:topic/description topic)]
        [:nav
         [:a.nav-item {:href (str "/for/" (:topic/slug topic) "/new")}
