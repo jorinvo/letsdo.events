@@ -25,8 +25,8 @@
      [:a {:href event-url}
       [:h3 (h title)]]
      (if-let [organizer-names (event/get-organizer-names-by-event-id ctx (:id event))]
-       (str " by " (str/join ", " (map #(if (empty? %) "Anonymous" %) organizer-names)))
-       [:div "there is no organizer yet! can you take over?"
+       [:small " by " (str/join ", " (map #(if (empty? %) "Anonymous" %) organizer-names))]
+       [:small "there is no organizer yet! can you take over?"
         [:form {:action (str event-url "/organize") :method "post"}
         [:button.btn {:type "submit"} "Organize " (topic/singular topic)]]])
      [:div
@@ -57,32 +57,34 @@
   (let [url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
         attendees (:event/attendee-count event)]
     [:div
-     [:i "You "
-      (if (event/organizer? ctx (:id event) (:id user))
-                   "are organizing"
-                   "created")
-      " this " (str/lower-case (topic/singular topic)) "!"]
+     [:p
+      [:i "You "
+       (if (event/organizer? ctx (:id event) (:id user))
+         "are organizing"
+         "created")
+       " this " (str/lower-case (topic/singular topic)) "!"] ]
      [:form {:action (str url "/edit")
              :method "post"
              :enctype "multipart/form-data"}
-      [:label (topic/singular topic) " title: "
-       [:input {:type "text"
-                :name "name"
-                :value (:event/name event)
-                :required true
-                :placeholder (str (topic/singular topic) " name")}]]
-      [:br]
-      [:textarea
-       {:type "text"
-        :name "description"
-        :required true
-        :placeholder "Write a description"
-        :rows 10
-        :cols 50}
-       (:event/description event)]
+      [:div.form-field
+       [:label [:div (topic/singular topic) " title" [:sup " *"]]
+        [:input.input-field
+         {:type "text"
+          :name "name"
+          :value (:event/name event)
+          :required true}]]]
+      [:div.form-field
+       [:label [:div "Description" [:sup " *"]]
+        [:textarea.input-field.input-wide
+         {:type "text"
+          :name "description"
+          :required true
+          :rows 10
+          :cols 50}
+         (:event/description event)]]]
       (let [image (image/get-by-hash (:event/image event) ctx)]
-        [:div
-         [:label "optional: Select an image"
+        [:div.form-field.image-upload
+         [:label "Select an image"
           [:div [:img#image-upload-preview {:src image
                                             :alt "logo"
                                             :class (when-not image "hide")}]
@@ -95,50 +97,45 @@
          [:input#delete-image-input {:type "hidden"
                                      :name "delete-image"}]
          [:span#image-upload-clear.btn {:class (when-not image "hide")} "remove image"]])
-      "When "
-      [:br]
-      "Starting: "
-      [:input {:type "date"
-               :name "start-date"
-               :value (:event/start-date event)
-               :placeholder "Date"}]
-      [:input {:type "time"
-               :name "start-time"
-               :value (:event/start-time event)
-               :placeholder "Time"}]
-      [:br]
-      "Until: "
-      [:input {:type "date"
-               :name "end-date"
-               :value (:event/end-date event)
-               :placeholder "Date"}]
-      [:input {:type "time"
-               :name "end-time"
-               :value (:event/end-time event)
-               :placeholder "Time"}]
-      [:br]
-      [:label "Where "
-       [:input {:type "text"
-                :name "location"
-                :value (:event/location event)
-                :placeholder "Location"}]]
-      [:br]
-      [:label "Max. number of attendees "
-       [:input {:type "number"
-                :name "max-attendees"
-                :value (:event/max-attendees event)
-                :placeholder "Number"
-                :min 1
-                :step 1}]]
-      [:br]
-      "currently "
-      attendees
-      (if (= attendees 1) " attendee" " attendees")
-      [:br]
+      [:div.form-field
+       [:label [:div "Starting"]]
+       [:input.input-field.input-date
+        {:type "date"
+         :value (:event/start-date event)
+         :name "start-date"}]
+       [:input.input-field.input-time
+        {:type "time"
+         :value (:event/start-time event)
+         :name "start-time"}]]
+      [:div.form-field
+       [:label [:div "Until"]]
+       [:input.input-field.input-date
+        {:type "date"
+         :value (:event/end-date event)
+         :name "end-date"}]
+       [:input.input-field.input-time
+        {:type "time"
+         :value (:event/end-time event)
+         :name "end-time"}]]
+      [:div.form-field
+       [:label [:div "Where"]
+        [:input.input-field
+         {:type "text"
+          :value (:event/location event)
+          :name "location"}]]]
+      [:div.form-field
+       [:label [:div "Max. number of attendees"]
+        [:input.input-field.input-small
+         {:type "number"
+          :name "max-attendees"
+          :value (:event/max-attendees event)
+          :min 1
+          :step 1}]]]
+      [:p [:small "currently " attendees (if (= attendees 1) " attendee" " attendees")]]
       [:button.btn {:type "submit"} "Update " (topic/singular topic)]
-      [:a {:href (str "/for/" (:topic/slug topic))} "Cancel"]]
+      [:a.cancel {:href (str "/for/" (:topic/slug topic))} "Cancel"]]
      [:form {:action (str url "/delete") :method "post"}
-              [:button.btn {:type "submit"} "Delete " (topic/singular topic)]]]))
+              [:button.btn.btn-small {:type "submit"} "Delete " (topic/singular topic)]]]))
 
 (defn get [{:keys [ctx path-params session]}]
   (let [topic-slug (:topic path-params)
@@ -177,30 +174,30 @@
        [:form {:action path
                :method "post"
                :enctype "multipart/form-data"}
-        [:label (topic/singular topic) " title: "
-         [:input {:type "text"
-                  :name "name"
-                  :required true
-                  :placeholder (str (topic/singular topic) " name")}]]
-        [:br]
-        (->> event/intentions
-             (map (fn [[value {label :text}]]
-                    [:label
-                     [:input {:type "radio"
-                              :name "intention"
-                              :required true
-                              :value value}]
-                     label
-                     [:br]])))
-        [:textarea {:type "text"
-                    :name "description"
-                    :required true
-                    :placeholder "Write a description"
-                    :rows 10
-                    :cols 50
-                    }]
-        [:div
-         [:label "optional: Select an image"
+        [:div.form-field
+         [:label [:div (topic/singular topic) " title" [:sup " *"]]
+          [:input.input-field
+           {:type "text"
+            :name "name"
+            :required true}]]]
+        [:div.form-field
+         (for [[value {label :text}] event/intentions]
+           [:label.radio
+            [:input {:type "radio"
+                     :name "intention"
+                     :required true
+                     :value value}]
+            label])]
+        [:div.form-field
+         [:label [:div "Description" [:sup " *"]]
+          [:textarea.input-field.input-wide
+           {:type "text"
+            :name "description"
+            :required true
+            :rows 10
+            :cols 50}]]]
+        [:div.form-field.image-upload
+         [:label "Select an image"
           [:div [:img#image-upload-preview {:alt "logo"
                                             :class "hide"}]
            [:span#image-upload-message.btn "click to select image"]]
@@ -209,39 +206,36 @@
                                       :accept (str/join ", " image-mime-types)
                                       :class "hide"}]]
          [:span#image-upload-clear.btn {:class "hide"} "remove image"]]
-        "When "
-        [:br]
-        "Starting: "
-        [:input {:type "date"
-                 :name "start-date"
-                 :placeholder "Date"}]
-        [:input {:type "time"
-                 :name "start-time"
-                 :placeholder "Time"}]
-        [:br]
-        "Until: "
-        [:input {:type "date"
-                 :name "end-date"
-                 :placeholder "Date"}]
-        [:input {:type "time"
-                 :name "end-time"
-                 :placeholder "Time"}]
-        [:br]
-        [:label "Where "
-         [:input {:type "text"
-                  :name "location"
-                  :placeholder "Location"}]]
-        [:br]
-        [:label "Max. number of attendees "
-         [:input {:type "number"
-                  :name "max-attendees"
-                  :placeholder "Number"
-                  :min 1
-                  :step 1}]]
-        [:br]
+        [:div.form-field
+         [:label [:div "Starting"]]
+         [:input.input-field.input-date
+          {:type "date"
+           :name "start-date"}]
+         [:input.input-field.input-time
+          {:type "time"
+           :name "start-time"}]]
+        [:div.form-field
+         [:label [:div "Until"]]
+         [:input.input-field.input-date
+          {:type "date"
+           :name "end-date"}]
+         [:input.input-field.input-time
+          {:type "time"
+           :name "end-time"}]]
+        [:div.form-field
+         [:label [:div "Where"]
+          [:input.input-field
+           {:type "text"
+            :name "location"}]]]
+        [:div.form-field
+         [:label [:div "Max. number of attendees"]
+          [:input.input-field.input-small
+           {:type "number"
+            :name "max-attendees"
+            :min 1
+            :step 1}]]]
         [:button.btn {:type "submit"} "Create " (topic/singular topic)]
-        " "
-        [:a {:href (str "/for/" (:topic/slug topic))} "Cancel"]]])))
+        [:a.cancel {:href (str "/for/" (:topic/slug topic))} "Cancel"]]])))
 
 (defn post [{:keys [ctx parameters path-params session]}]
   (let [topic-slug (:topic path-params)

@@ -54,7 +54,8 @@
         :outline :none
         :color background-color}]
       [:&.btn-small
-       {:font-size "0.7rem"}]]
+       {:font-size "0.7rem"
+        :margin "0.5rem 0"}]]
      [:.hide {:display "none !important"}]
      [:.container
       {:margin-top "3rem"
@@ -71,12 +72,22 @@
       {}]
      [:.input-field
       {:font-size "1rem"
-       :margin "0.2rem 0"
+       :margin-top "0.2rem"
+       :margin-bottom "0.2rem 0"
+       :margin-right "0.8rem"
        :padding "0.4rem 0.6rem"
        :border (str "0.1rem solid " text-color)
        :max-width "100%"
        :width "15rem"}
-      [:&:required {:box-shadow :none}]]
+      [:&:required {:box-shadow :none}]
+      [:&.input-date
+       {:width :auto}]
+      [:&.input-time
+       {:width :auto}]
+      [:&.input-small
+       {:width "4rem"}]
+      [:&.input-wide
+       {:width "22rem"}]]
      [:.radio
       {:display :block
        :margin-top "0.5rem"}
@@ -84,6 +95,9 @@
        {:margin-right "1rem"}
        [:&:required
         {:box-shadow :none}]]]
+     [:.inline-form
+      {:display :inline-block
+       :margin-left "1rem"}]
      [:.form-field
       {:padding "0.7rem 0"}]
      [:.login-container

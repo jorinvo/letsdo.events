@@ -163,41 +163,58 @@
         attendees (:event/attendee-count event)
         max-attendees (:event/max-attendees event)
         user-joined (event/joined? ctx (:id event) (:id user))
-        user-is-organizer (event/organizer? ctx (:id event) (:id user))]
+        user-is-organizer (event/organizer? ctx (:id event) (:id user))
+        {:keys [:event/start-date
+                :event/start-time
+                :event/end-date
+                :event/end-time
+                :event/location]} event]
     [:div
      (when-let [image (image/get-by-hash (:event/image event) ctx)]
                [:img {:src image
                       :alt "event image"}])
      [:a {:href event-url}
       [:h3 (h title)]]
-     (if-let [organizer-names (event/get-organizer-names-by-event-id ctx (:id event))]
-       (str " by " (str/join ", " (map #(if (empty? %) "Anonymous" %) organizer-names)))
-       [:div "there is no organizer yet! can you take over?"
-        [:form {:action (str event-url "/organize") :method "post"}
-        [:button.btn {:type "submit"} "Organize " (topic/singular topic)]]])
-     [:div
-      "starting " (:event/start-date event) " at " (:event/start-time event)
-      ", until " (:event/end-date event) " at " (:event/end-time event)]
-     (when-let [l (:event/location event)]
-       [:p (h l)])
-     [:p (escape-with-br (:event/description event))]
-     attendees
-     (if max-attendees
-       (str "/" max-attendees " " (if (= max-attendees 1) "attendee" "attendees"))
-       (if (= attendees 1) " attendee" " attendees"))
-     (cond
-       user-joined
+     (when (or start-date start-time)
        [:div
-        [:span " - including you!"]
-        [:form {:action (str event-url "/leave") :method "post"}
-         [:button.btn {:type "submit"} "Leave " (topic/singular topic)]]]
+       "Starting "
+       start-date
+       (when start-time
+         [:span " at " start-time])])
+     (when (or end-date end-time)
+       [:div
+       "Until "
+       end-date
+       (when end-time [:span " at " end-time])])
+     (when location
+       [:p "Where? " (h location)])
+     [:p (escape-with-br (:event/description event))]
+     (if-let [organizer-names (event/get-organizer-names-by-event-id ctx (:id event))]
+       [:div
+        [:small (str " by " (str/join ", " (map #(if (empty? %) "Anonymous" %) organizer-names)))]
+        [:div
+         [:small
+          attendees
+          (if max-attendees
+            (str "/" max-attendees " " (if (= max-attendees 1) "attendee" "attendees"))
+            (if (= attendees 1) " attendee" " attendees"))]
+         (cond
+           user-joined
+           [:small
+            " - including you!"
+            [:form.inline-form {:action (str event-url "/leave") :method "post"}
+             [:button.btn.btn-small {:type "submit"} "Leave " (topic/singular topic)]]]
 
-       (and max-attendees (>= attendees max-attendees))
-       [:span " No spot left!"]
+           (and max-attendees (>= attendees max-attendees))
+           [:small " No spot left!"]
 
-       (not user-is-organizer)
-       [:form {:action (str event-url "/join") :method "post"}
-        [:button.btn {:type "submit"} "Join " (topic/singular topic)]])]))
+           (not user-is-organizer)
+           [:form.inline-form {:action (str event-url "/join") :method "post"}
+            [:button.btn.btn-small {:type "submit"} "Join " (topic/singular topic)]])]]
+       [:small "There is no organizer yet! can you take over?"
+        [:form.inline-form {:action (str event-url "/organize") :method "post"}
+        [:button.btn.btn-small {:type "submit"} "Organize " (topic/singular topic)]]])
+     ]))
 
 (defn overview [{:keys [path-params ctx session]}]
   (let [topic (topic/get-by-slug (:topic path-params) ctx)

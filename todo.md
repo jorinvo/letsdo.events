@@ -1,5 +1,7 @@
 # letsdo.events
 
+- escape html when rendering
+
 - sorting of event list
 - event listing filters
 - event listing search
