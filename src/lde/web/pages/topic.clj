@@ -44,7 +44,11 @@
                                       :accept (str/join ", " image-mime-types)
                                       :class "hide"}]]
          [:span#image-upload-clear.btn {:class "hide"} "remove image"]]
-        (->> topic/visibilities
+        [:input {:type "hidden"
+                 :name "visibility"
+                 :required true
+                 :value "public"}]
+        (comment ->> topic/visibilities
              (map (fn [[value {:keys [label]}]]
                     [:label
                      [:input {:type "radio"
@@ -109,7 +113,11 @@
                                        :name "delete-image"}]
            [:span#image-upload-clear.btn {:class (when-not image "hide")} "remove image"]])
         [:br]
-        (->> topic/visibilities
+        [:input {:type "hidden"
+                 :name "visibility"
+                 :required true
+                 :value "public"}]
+        (comment ->> topic/visibilities
              (map (fn [[value {:keys [label]}]]
                     [:label
                      [:input {:type "radio"
@@ -210,12 +218,12 @@
                  :alt "logo"}])
         [:h1 (:topic/name topic)]]
        [:h2 (:topic/description topic)]
-       (when (topic/admin? ctx (:id topic) (:id user))
-         [:a {:href (str "/for/" (:topic/slug topic) "/edit")}
-          "Edit Meta"])
-       [:div
-        [:a {:href (str "/for/" (:topic/slug topic) "/new")}
-         "New " (topic/singular topic)]]
+       [:nav
+        [:a.nav-item {:href (str "/for/" (:topic/slug topic) "/new")}
+         "New " (topic/singular topic)]
+        (when (topic/admin? ctx (:id topic) (:id user))
+          [:a.nav-item {:href (str "/for/" (:topic/slug topic) "/edit")}
+           "Edit Topic Meta"])]
        [:ul.overview-list (map #(vector :li (event-item % topic user ctx)) events)]])))
 
 (defn delete [{:keys [ctx path-params]}]

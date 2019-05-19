@@ -7,7 +7,7 @@
    :db-dir "./db"
    :style {:background-color  "#ffffff"
            :primary-color  "rgb(226, 95, 125)"
-           :text-color  "#000000"
+           :text-color  "#252525"
            :title-font  "'Halant', serif"
            :base-font  "'Nunito', sans-serif"
            :additional-stylesheets ["https://fonts.googleapis.com/css?family=Halant|Nunito&display=swap"]}

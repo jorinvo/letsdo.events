@@ -6,48 +6,44 @@
 - error page
 
 - send mail
+
 - redirect empty /for and /about one up
 - redirect unauthorized to login with redirect URI
     letsdo.events/login?goto=heart-of-clojure/about/cljdoc-hacking
 
-- put server in ctx
+- catch errors and never show to client
+- nice error/spec messages for dev
+
+
 
 - allow editing slug and check for conflicts
+
 - image resizing
-
-- default to public topic for now
-
-- list public topics on /
 
 - crop image size in browser
 
-- use same data for schema and for key selection
-
-- spec for config
-- package as uberjar
-
-- allow app to be running at sub-route instead of top level
-- catch errors and never show to client
-- nice error/spec messages for dev
-- repair on read: when reading things that are supposed to be unique but are not, throw away invalid ones
-  - read user by email: throw away all but the first in time if there is more than one
-- delete unused images
-  - repair on read: in case an image cannot be found, it must be restored from history
-
 - HTTPS via letsencrypt support
-
-- drag&drop image upload
-
-- allow adding and removing organizers
 
 - confirm delete event
 - confirm delete topic
+
+- allow adding and removing organizers
+
+
+
+
+- use same data for schema and for key selection
+- put server in ctx
+- spec for config
+- package as uberjar
+- allow app to be running at sub-route instead of top level
+
+- drag&drop image upload
 
 - list all your topics
 - list users by topic
 
 - CRUD for topic admin
-- multiple organizers per event
 
 - user settings at /me
 - delete account

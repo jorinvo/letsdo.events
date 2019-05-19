@@ -17,10 +17,8 @@
     [lde.core.topic :as topic]
     [lde.config :refer [get-config]]))
 
-(def config (get-config))
-
 (defn make-context []
-  (-> {:config config}
+  (-> {:config (get-config)}
       (db/init)))
 
 (defonce ctx (atom (make-context)))
@@ -67,7 +65,7 @@
       inject-dev-websocket-script))
 
 (defn make-dev-server []
-  (http/start-server dev-handler config))
+  (http/start-server dev-handler (:config @ctx)))
 
 (defonce server (atom (make-dev-server)))
 

@@ -99,6 +99,9 @@
 (defn list-by-user [user-id ctx]
   (db/list-by-attribute ctx :topic/creator user-id))
 
+(defn list-all-public [ctx]
+  (db/list-by-attribute ctx :topic/visibility :public))
+
 (defn admin? [ctx topic-id user-id]
   (db/exists-by-attributes ctx {:admin/topic topic-id
                                 :admin/user user-id}))

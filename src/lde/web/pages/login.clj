@@ -38,28 +38,28 @@
             :onClick signup-click}
            "Signup"]]
          [:form {:action path :method "post"}
-          [:div.form-field
-           [:label.name-field "Name: "
+          [:div.form-field.name-field
+           [:label [:div "Name"]
             [:input {:type "text"
-                     :name "name"
-                     :placeholder "Name"}]]]
+                     :name "name"}]]]
           [:div.form-field
-           [:label "Email: "
+           [:label
+            [:div "Email" [:sup " *"]]
             [:input {:type "email"
                      :name "email"
-                     :required true
-                     :placeholder "Email"}]]]
+                     :required true}]]]
           [:div.form-field
-           [:label [:i "Optionally"] " password: "
-            [:input {:type "password"
-                     :name "password"
-                     :placeholder "Password"}]]]
-          [:small "No need to set a password, we will send you a mail instead"]
-          [:div.form-field
-           [:label.link-field [:i "Optionally"] " link to your website/social media/...: "
+           [:label
+            [:div "Password"]
+            [:div
+             [:input {:type "password"
+                      :name "password"}]]
+          [:small "No need for a password, you get a mail instead"]]]
+          [:div.form-field.link-field
+           [:label
+            [:div "Link to your website / social media / ..."]
             [:input {:type "text"
-                     :name "link"
-                     :placeholder "Link"}]]]
+                     :name "link"}]]]
           [:div.form-field
            [:button.btn.login-button {:type "submit"} "Login"]
            [:button.btn.signup-button {:type "submit"} "Signup"]]]])))
