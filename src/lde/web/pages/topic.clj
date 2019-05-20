@@ -7,6 +7,7 @@
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
     [lde.web :refer [render escape-with-br multipart-image-to-data-uri image-mime-types]]
+    [lde.web.pages.event :as event-page]
     [lde.core.topic :as topic]
     [lde.core.image :as image]
     [lde.core.user :as user]
@@ -164,28 +165,14 @@
         max-attendees (:event/max-attendees event)
         user-joined (event/joined? ctx (:id event) (:id user))
         user-is-organizer (event/organizer? ctx (:id event) (:id user))
-        {:keys [:event/start-date
-                :event/start-time
-                :event/end-date
-                :event/end-time
-                :event/location]} event]
+        {:keys [:event/location]} event]
     [:div
-     (when-let [image (image/get-by-hash (:event/image event) ctx)]
-               [:img {:src image
-                      :alt "event image"}])
      [:a {:href event-url}
       [:h3 (h title)]]
-     (when (or start-date start-time)
-       [:div
-       "Starting "
-       start-date
-       (when start-time
-         [:span " at " start-time])])
-     (when (or end-date end-time)
-       [:div
-       "Until "
-       end-date
-       (when end-time [:span " at " end-time])])
+     (when-let [image (image/get-by-hash (:event/image event) ctx)]
+               [:img.logo {:src image
+                      :alt "event image"}])
+     (event-page/date-and-time event)
      (when location
        [:p "Where? " (h location)])
      [:p (escape-with-br (:event/description event))]
@@ -237,7 +224,8 @@
          "New " (topic/singular topic)]
         (when (topic/admin? ctx (:id topic) (:id user))
           [:a.nav-item {:href (str "/for/" (:topic/slug topic) "/edit")}
-           "Edit Topic Meta"])]
+           "Edit Topic Meta"])
+        [:a.nav-item {:href "/logout"} "Logout"]]
        [:ul.overview-list (map #(vector :li (event-item % topic user ctx)) events)]])))
 
 (defn delete [{:keys [ctx path-params]}]

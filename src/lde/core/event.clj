@@ -2,6 +2,9 @@
   (:refer-clojure :exclude [update])
   (:require
     [clojure.set :refer [rename-keys]]
+    [clojure.spec.alpha :as s]
+    [clojure.test.check.generators :as gen]
+    [java-time :as time]
     [cuerdas.core :as cuerdas]
     [lde.core.image :as image]
     [lde.db :as db]))
@@ -32,6 +35,35 @@
                            :start-time
                            :end-date
                            :end-time]))
+
+(s/def ::maybe-local-date-str
+  (s/or :nil
+        nil?
+        :local-date-str
+        (s/spec #(try (time/local-date %) true
+                      (catch Exception e false))
+                :gen
+                (fn [] (gen/fmap #(-> % time/instant str (subs 0 10))
+                                 (s/gen (s/spec inst?)))))))
+
+(s/def ::maybe-local-time-str
+  (s/or :nil
+        nil?
+        :local-time-str
+        (s/spec #(try (time/local-time %) true
+                      (catch Exception e false))
+                :gen
+                (fn [] (gen/fmap #(-> % time/instant str (subs 11 16))
+                                 (s/gen (s/spec inst?)))))))
+
+(s/def :event/start-date ::maybe-local-date-str)
+(s/def :event/start-time ::maybe-local-time-str)
+(s/def :event/end-date ::maybe-local-date-str)
+(s/def :event/end-time ::maybe-local-time-str)
+(s/def ::event (s/keys :req [:event/start-date
+                             :event/start-time
+                             :event/end-date
+                             :event/end-time]))
 
 (defn- unique-slug [event-name ctx]
   (let [base (cuerdas/slug event-name)]
@@ -106,8 +138,7 @@
                           [?id :event/slug event-slug]]
                  :args [{'event-slug event
                          'topic-slug topic}]})
-      first
-      first))
+      ffirst))
 
 (defn get-by-id [ctx id]
   (-> (db/get-by-id ctx id)

@@ -164,7 +164,7 @@
         q (crux/q db {:find '[value]
                       :where '[[id :value value]]
                       :args [{'id k}]})]
-    (first (first q))))
+    (ffirst q)))
 
 (comment
 

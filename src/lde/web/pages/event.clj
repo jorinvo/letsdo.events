@@ -2,6 +2,7 @@
   (:refer-clojure :exclude [new get])
   (:require
     [clojure.string :as str]
+    [java-time :as time]
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
@@ -11,6 +12,50 @@
     [lde.core.image :as image]
     [lde.core.topic :as topic]
     [lde.core.user :as user]))
+
+(defn- format-date [d]
+  (time/format "E, d MMM yyyy" (time/local-date d)))
+
+(defn- format-time [t]
+  (time/format "kk:mma" (time/local-time t)))
+
+(defn date-and-time [{:keys [:event/start-date
+                             :event/start-time
+                             :event/end-date
+                             :event/end-time]}]
+  (let [start-end-same-day (= start-date end-date)]
+    (when (or start-date start-time end-date end-time)
+      [:div
+       "When? "
+       (when start-date
+         (format-date start-date))
+       (when start-time
+         (str (when start-date
+                ", ")
+              (format-time start-time)))
+       (when (or (and end-date (not start-end-same-day))
+                 end-time)
+         " until ")
+       (when (and end-date (not start-end-same-day))
+         (str (format-date end-date)
+              (when end-date
+                ", ")))
+       (when end-time
+         (format-time end-time))])))
+
+(comment
+
+(require
+  '[clojure.spec.alpha :as s]
+  '[clojure.test.check.generators :as gen]
+  '[clojure.pprint :refer [pprint]]
+  '[hiccup.core :refer [html]])
+
+(->> (gen/sample (s/gen (s/get-spec :lde.core.event/event)) 20)
+     (map #(vector % (html (date-and-time %))))
+     pprint)
+
+)
 
 (defn show-event [event topic user ctx]
   (let [title (:event/name event)
@@ -24,17 +69,17 @@
                       :alt "event image"}])
      [:a {:href event-url}
       [:h3 (h title)]]
-     (if-let [organizer-names (event/get-organizer-names-by-event-id ctx (:id event))]
-       [:small " by " (str/join ", " (map #(if (empty? %) "Anonymous" %) organizer-names))]
-       [:small "there is no organizer yet! can you take over?"
-        [:form {:action (str event-url "/organize") :method "post"}
-        [:button.btn {:type "submit"} "Organize " (topic/singular topic)]]])
      [:div
       "starting " (:event/start-date event) " at " (:event/start-time event)
       ", until " (:event/end-date event) " at " (:event/end-time event)]
      (when-let [l (:event/location event)]
        [:p (h l)])
      [:p (escape-with-br (:event/description event))]
+     (if-let [organizer-names (event/get-organizer-names-by-event-id ctx (:id event))]
+       [:small " by " (str/join ", " (map #(if (empty? %) "Anonymous" %) organizer-names))]
+       [:small "there is no organizer yet! can you take over?"
+        [:form {:action (str event-url "/organize") :method "post"}
+        [:button.btn {:type "submit"} "Organize " (topic/singular topic)]]])
      attendees
      (if max-attendees
        (str "/" max-attendees " " (if (= max-attendees 1) "attendee" "attendees"))
