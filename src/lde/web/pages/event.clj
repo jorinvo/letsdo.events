@@ -14,10 +14,15 @@
     [lde.core.user :as user]))
 
 (defn- format-date [d]
-  (time/format "E, d MMM yyyy" (time/local-date d)))
+  (let [ld (time/local-date d)]
+    (time/format
+      (str "E, d MMM"
+           (when (not= (time/year ld) (time/year))
+             " yyyy"))
+      ld)))
 
 (defn- format-time [t]
-  (time/format "kk:mma" (time/local-time t)))
+  (time/format "kk:mm" (time/local-time t)))
 
 (defn date-and-time [{:keys [:event/start-date
                              :event/start-time

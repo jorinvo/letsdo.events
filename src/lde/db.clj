@@ -40,16 +40,18 @@
 
 (defmacro tx [ctx & body]
   (let [result (gensym 'result)
+        txs (gensym 'txs)
         chan-response (gensym 'chan-response)]
     `(let [~chan-response (async/<!! (::aquire ~ctx))]
        (when (not= :ok ~chan-response)
          (throw (Exception. "DB closed. Transaction aborded.")))
        (reset! (::transaction ~ctx) [])
        (try
-         (let [~result ~@body]
-           (->> @(::transaction ~ctx)
-                (filterv some?)
-                (crux/submit-tx (::crux ~ctx)))
+         (let [~result ~@body
+               ~txs (->> @(::transaction ~ctx)
+                         (filterv some?))]
+           (when-not (empty? ~txs)
+             (crux/submit-tx (::crux ~ctx) ~txs))
            (reset! (::transaction ~ctx) nil)
            ~result)
          (finally (async/>!! (::release ~ctx) :ok))))))
@@ -127,13 +129,18 @@
   (first (list-by-attribute ctx attr value)))
 
 (defn count-by-attributes [{:keys [::crux]} attrs]
-  (-> (crux/db crux)
-      (aggr/q {:aggr '{:partition-by []
-                        :select {?count [0 (inc acc) ?id]}}
-                :where (mapv (fn [[attr value]]
-                               ['?id attr value]) attrs)})
-       first
-       (get :count 0)))
+  (let [valid-attrs (->> attrs
+                         (remove #(nil? (second %)))
+                         (mapv (fn [[attr value]]
+                                 ['?id attr value])))]
+    (if (empty? valid-attrs)
+      0
+      (-> (crux/db crux)
+          (aggr/q {:aggr '{:partition-by []
+                           :select {?count [0 (inc acc) ?id]}}
+                   :where valid-attrs})
+          first
+          (get :count 0)))))
 
 (defn count-by-attribute [ctx attr value]
   (count-by-attributes ctx {attr value}))
@@ -155,9 +162,7 @@
   (exists-by-attributes ctx {attr value}))
 
 (defn get-by-id [{:keys [::crux]} id]
-  (-> (crux/db crux)
-      (crux/entity id)
-      crux->id))
+  (crux->id (crux/entity (crux/db crux) id)))
 
 (defn get-key [{:keys [::crux]} k]
   (let [db (crux/db crux)

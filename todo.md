@@ -2,8 +2,6 @@
 
 - always show single event view (also when able to edit)
 
-- cleanup web ns
-
 - escape html when rendering
 
 - sorting of event list

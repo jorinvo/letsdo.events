@@ -75,6 +75,11 @@
             slug)))
       base)))
 
+(defn- empty-vals-to-nil [o]
+  (->> o
+       (map (fn [[k v]] [k (when (not= "" v) v)]))
+       (into {})))
+
 (defn create [data ctx]
   (db/tx ctx
          (let [image (image/new-entity-from-data (:image data) ctx)
@@ -83,7 +88,8 @@
                          (rename-keys event-keys)
                          (assoc :id (db/id)
                                 :event/slug (unique-slug (:name data) ctx)
-                                :event/image (:id image)))
+                                :event/image (:id image))
+                         empty-vals-to-nil)
                {intention :intention} data]
            (->> [event
                  image
@@ -92,13 +98,6 @@
                   (keyword intention "user") (:event/creator event)}]
                 (db/save-multi! ctx)
                 first))))
-
-(defn- empty-vals-to-nil [o]
-  (->> o
-       (map (fn [[k v]]
-              [k (when (not= "" v)
-                   v)]))
-       (into {})))
 
 (defn update [data event-id ctx]
   (db/tx ctx
@@ -110,11 +109,11 @@
                          (merge (-> data
                                     (select-keys (keys updatable-event-keys))
                                     (rename-keys updatable-event-keys)))
-                         empty-vals-to-nil
                          (clojure.core/update :event/image #(cond delete-image nil
                                                                   image (:id image)
-                                                                  :else %)))]
-             (db/update! new-event existing-event ctx)
+                                                                  :else %))
+                         empty-vals-to-nil)]
+             (db/save! new-event ctx)
              (when-not (or delete-image (image/exists-by-hash? (:id image) ctx))
                (db/save! image ctx))
              new-event))))
