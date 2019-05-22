@@ -11,6 +11,7 @@
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [ring.middleware.session :refer [wrap-session]]
             [ring.middleware.session.cookie :refer [cookie-store]]
+            [ring.util.response :as response]
             [lde.core.settings :as settings]
             [lde.core.topic :as topic]
             [lde.core.event :as event]
@@ -165,47 +166,53 @@
                                             :type #(contains? topic/types (keyword %))
                                             :visibility #(contains? topic/visibilities (keyword %))
                                             :image ::image}}}}]
-   ["/for/:topic" {:middleware [authorize]}
-    ["" {:get topic-page/overview}]
-    ["/edit" {:get topic-page/edit
-              :post {:handler topic-page/post-edit
-                     :parameters {:multipart {:name req-str
-                                              :description string?
-                                              :type #(contains? topic/types (keyword %))
-                                              :visibility #(contains? topic/visibilities (keyword %))
-                                              :image ::image
-                                              :delete-image string?}}}}]
-    ["/delete" {:post topic-page/delete}]
-    ["/new" {:get event-page/new
-             :post {:handler event-page/post
-                    :parameters {:multipart {:name req-str
-                                             :description req-str
-                                             :intention #(contains? event/intentions (keyword %))
-                                             :start-date opt-date
-                                             :start-time opt-time
-                                             :end-date opt-date
-                                             :end-time opt-time
-                                             :max-attendees ::max-attendees
-                                             :location string?
-                                             :image ::image}}}}]
-    ["/about/:event"
-     ["" {:get event-page/get}]
-     ["/edit" {:get event-page/edit
-               :post {:handler event-page/post-edit
+   ["/for"
+    ["" {:get (constantly (response/redirect "/" :permanent-redirect))}]
+    ["/:topic" {:middleware [authorize
+                             topic-page/load-middleware]}
+     ["" {:get topic-page/overview}]
+     ["/edit" {:get topic-page/edit
+               :post {:handler topic-page/post-edit
                       :parameters {:multipart {:name req-str
-                                               :description req-str
-                                               :start-date opt-date
-                                               :start-time opt-time
-                                               :end-date opt-date
-                                               :end-time opt-time
-                                               :max-attendees ::max-attendees
-                                               :location string?
+                                               :description string?
+                                               :type #(contains? topic/types (keyword %))
+                                               :visibility #(contains? topic/visibilities (keyword %))
                                                :image ::image
                                                :delete-image string?}}}}]
-     ["/organize" {:post event-page/organize}]
-     ["/join" {:post event-page/join}]
-     ["/leave" {:post event-page/leave}]
-     ["/delete" {:post event-page/delete}]]]])
+     ["/delete" {:post topic-page/delete}]
+     ["/new" {:get event-page/new
+              :post {:handler event-page/post
+                     :parameters {:multipart {:name req-str
+                                              :description req-str
+                                              :intention #(contains? event/intentions (keyword %))
+                                              :start-date opt-date
+                                              :start-time opt-time
+                                              :end-date opt-date
+                                              :end-time opt-time
+                                              :max-attendees ::max-attendees
+                                              :location string?
+                                              :image ::image}}}}]
+     ["/about"
+      ["" {:get (fn [{{t :topic} :path-params}]
+                  (response/redirect (str "/for/" t) :permanent-redirect))}]
+      ["/:event" {:middleware [event-page/load-middleware]}
+       ["" {:get event-page/get}]
+       ["/edit" {:get event-page/edit
+                 :post {:handler event-page/post-edit
+                        :parameters {:multipart {:name req-str
+                                                 :description req-str
+                                                 :start-date opt-date
+                                                 :start-time opt-time
+                                                 :end-date opt-date
+                                                 :end-time opt-time
+                                                 :max-attendees ::max-attendees
+                                                 :location string?
+                                                 :image ::image
+                                                 :delete-image string?}}}}]
+       ["/organize" {:post event-page/organize}]
+       ["/join" {:post event-page/join}]
+       ["/leave" {:post event-page/leave}]
+       ["/delete" {:post event-page/delete}]]]]]])
 
 (defn make-context-middleware [ctx]
   (fn [handler]

@@ -13,6 +13,13 @@
     [lde.core.user :as user]
     [lde.core.event :as event]))
 
+(defn load-middleware [handler]
+  (fn [{:as req :keys [path-params ctx]}]
+    (if-let [topic (topic/get-by-slug (:topic path-params) ctx)]
+      (handler (assoc req :topic topic))
+      {:status 404
+       :body "Topic not found"})))
+
 (defn new [req]
   (let [path (-> req get-match match->path)]
     (render
@@ -69,10 +76,8 @@
         [:button.btn {:type "submit"} "Create Topic"]
         [:a.cancel {:href "/"} "Cancel"]]])))
 
-(defn edit [{:keys [path-params ctx]}]
-  (let [topic-slug (:topic path-params)
-        topic (topic/get-by-slug topic-slug ctx)
-        url (str "/for/" topic-slug)]
+(defn edit [{:keys [topic ctx]}]
+  (let [url (str "/for/" (:topic/slug topic))]
     (render
       ctx
       {:title "Edit Topic"
@@ -138,7 +143,7 @@
         [:br]
         [:button.btn {:type "submit"} "Update Topic"]
         " "
-        [:a.cancel {:href (str "/for/" topic-slug)} "Cancel"]]
+        [:a.cancel {:href url} "Cancel"]]
        [:form {:action (str url "/delete") :method "post"}
         [:button.btn.btn-small {:type "submit"} "Delete Topic"]]])))
 
@@ -149,18 +154,15 @@
                   (topic/create ctx))]
     (response/redirect (str "/for/" (:topic/slug topic)) :see-other)))
 
-(defn post-edit [{:keys [ctx session path-params parameters]}]
-  (let [topic-id (:id (topic/get-by-slug (:topic path-params) ctx))
-        topic (-> (:multipart parameters)
-                  (update :image multipart-image-to-data-uri)
-                  (update :delete-image #(= "true" %))
-                  (topic/update topic-id ctx))]
-    (prn parameters)
-    (response/redirect (str "/for/" (:topic/slug topic)) :see-other)))
+(defn post-edit [{:keys [ctx session topic parameters]}]
+  (let [new-topic (-> (:multipart parameters)
+                      (update :image multipart-image-to-data-uri)
+                      (update :delete-image #(= "true" %))
+                      (topic/update (:id topic) ctx))]
+    (response/redirect (str "/for/" (:topic/slug new-topic)) :see-other)))
 
-(defn overview [{:keys [path-params ctx session]}]
-  (let [topic (topic/get-by-slug (:topic path-params) ctx)
-        topic-url (str "/for/" (:topic path-params))
+(defn overview [{:keys [topic ctx session]}]
+  (let [topic-url (str "/for/" (:topic/slug topic))
         events (event/list-by-topic (:id topic) ctx)
         user (user/get-by-id ctx (:id session))]
     (render
@@ -183,7 +185,6 @@
         [:a.nav-item {:href "/logout"} "Logout"]]
        [:ul.overview-list (map #(vector :li (event-page/item % topic user ctx)) events)]])))
 
-(defn delete [{:keys [ctx path-params]}]
-  (let [topic-id (:id (topic/get-by-slug (:topic path-params) ctx))]
-    (topic/delete ctx topic-id)
-    (response/redirect "/" :see-other)))
+(defn delete [{:keys [ctx topic]}]
+  (topic/delete ctx (:id topic))
+  (response/redirect "/" :see-other))

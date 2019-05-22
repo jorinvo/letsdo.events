@@ -1,22 +1,30 @@
 # letsdo.events
 
+- send mail
+
+- redirect unauthorized to login with redirect URI
+    letsdo.events/login?goto=heart-of-clojure/about/cljdoc-hacking
+- redirect not found
+
+- spec for config
+- package as uberjar
+
+- HTTPS via letsencrypt support
+
+
+
+
 - sorting of event list
 - event listing filters
 - event listing search
+
+
 - error page
 
 - escape html when rendering
 
-- send mail
-
-- redirect empty /for and /about one up
-- redirect unauthorized to login with redirect URI
-    letsdo.events/login?goto=heart-of-clojure/about/cljdoc-hacking
-
 - catch errors and never show to client
 - nice error/spec messages for dev
-
-
 
 - allow editing slug and check for conflicts
 
@@ -24,7 +32,6 @@
 
 - crop image size in browser
 
-- HTTPS via letsencrypt support
 
 - confirm delete event
 - confirm delete topic
@@ -32,12 +39,8 @@
 - allow adding and removing organizers
 
 
-
-
 - use same data for schema and for key selection
 - put server in ctx
-- spec for config
-- package as uberjar
 - allow app to be running at sub-route instead of top level
 
 - drag&drop image upload
@@ -58,8 +61,6 @@
   - can unsubscribe
 - calendar integration
 
-- format event date nicely
-- event times: support invalid dates / try to correct format
 - limit input char length (against evil input)
 - spec for API responses
 - security headers
