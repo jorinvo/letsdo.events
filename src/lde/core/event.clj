@@ -37,30 +37,30 @@
                            :end-time]))
 
 (s/def ::maybe-local-date-str
-  (s/or :nil
-        nil?
-        :local-date-str
-        (s/spec #(try (time/local-date %) true
-                      (catch Exception e false))
-                :gen
-                (fn [] (gen/fmap #(-> % time/instant str (subs 0 10))
-                                 (s/gen (s/spec inst?)))))))
+  (s/spec #(or (nil? %)
+               (try (time/local-date %) true
+                    (catch Exception e false)))
+          :gen
+          (fn [] (gen/one-of
+                   [(s/gen (s/spec nil?))
+                    (gen/fmap #(-> % time/instant str (subs 0 10))
+                              (s/gen (s/spec inst?)))]))))
 
 (s/def ::maybe-local-time-str
-  (s/or :nil
-        nil?
-        :local-time-str
-        (s/spec #(try (time/local-time %) true
-                      (catch Exception e false))
-                :gen
-                (fn [] (gen/fmap #(-> % time/instant str (subs 11 16))
-                                 (s/gen (s/spec inst?)))))))
+  (s/spec #(or (nil? %)
+               (try (time/local-time  %) true
+                    (catch Exception e false)))
+          :gen
+          (fn [] (gen/one-of
+                   [(s/gen (s/spec nil?))
+                    (gen/fmap #(-> % time/instant str (subs 11 16))
+                                 (s/gen (s/spec inst?)))]))))
 
 (s/def :event/start-date ::maybe-local-date-str)
 (s/def :event/start-time ::maybe-local-time-str)
 (s/def :event/end-date ::maybe-local-date-str)
 (s/def :event/end-time ::maybe-local-time-str)
-(s/def ::event (s/keys :req [:event/start-date
+(s/def ::event (s/keys :opt [:event/start-date
                              :event/start-time
                              :event/end-date
                              :event/end-time]))
@@ -77,7 +77,7 @@
 
 (defn- empty-vals-to-nil [o]
   (->> o
-       (map (fn [[k v]] [k (when (not= "" v) v)]))
+       (remove (fn [[k v]] (or (= "" v) (nil? v))))
        (into {})))
 
 (defn create [data ctx]

@@ -148,10 +148,10 @@
    ["/" {:get home/handler}]
    ["/login"
     ["" {:get login/handler
-              :post {:handler login/post-login
-                     :parameters {:form ::login-form}}}]
+         :post {:handler login/post-login
+                :parameters {:form ::login-form}}}]
     ["/mail" {:get {:handler login/mail
-               :parameters {:query ::login-query}}}]
+                    :parameters {:query ::login-query}}}]
     ["/mail-confirm" {:get login/mail-confirm}]]
    ["/signup" {:get login/handler
                :post {:handler login/post-signup
@@ -190,7 +190,8 @@
                                              :image ::image}}}}]
     ["/about/:event"
      ["" {:get event-page/get}]
-     ["/edit" {:post {:handler event-page/edit
+     ["/edit" {:get event-page/edit
+               :post {:handler event-page/post-edit
                       :parameters {:multipart {:name req-str
                                                :description req-str
                                                :start-date opt-date

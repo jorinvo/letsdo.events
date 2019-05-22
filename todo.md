@@ -1,13 +1,11 @@
 # letsdo.events
 
-- always show single event view (also when able to edit)
-
-- escape html when rendering
-
 - sorting of event list
 - event listing filters
 - event listing search
 - error page
+
+- escape html when rendering
 
 - send mail
 

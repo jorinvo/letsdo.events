@@ -158,51 +158,6 @@
     (prn parameters)
     (response/redirect (str "/for/" (:topic/slug topic)) :see-other)))
 
-(defn- event-item [event topic user ctx]
-  (let [title (:event/name event)
-        event-url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
-        attendees (:event/attendee-count event)
-        max-attendees (:event/max-attendees event)
-        user-joined (event/joined? ctx (:id event) (:id user))
-        user-is-organizer (event/organizer? ctx (:id event) (:id user))
-        {:keys [:event/location]} event]
-    [:div
-     [:a {:href event-url}
-      [:h3 (h title)]]
-     (when-let [image (image/get-by-hash (:event/image event) ctx)]
-               [:img.logo {:src image
-                      :alt "event image"}])
-     (event-page/date-and-time event)
-     (when location
-       [:p "Where? " (h location)])
-     [:p (escape-with-br (:event/description event))]
-     (if-let [organizer-names (event/get-organizer-names-by-event-id ctx (:id event))]
-       [:div
-        [:small (str " by " (str/join ", " (map #(if (empty? %) "Anonymous" %) organizer-names)))]
-        [:div
-         [:small
-          attendees
-          (if max-attendees
-            (str "/" max-attendees " " (if (= max-attendees 1) "attendee" "attendees"))
-            (if (= attendees 1) " attendee" " attendees"))]
-         (cond
-           user-joined
-           [:small
-            " - including you!"
-            [:form.inline-form {:action (str event-url "/leave") :method "post"}
-             [:button.btn.btn-small {:type "submit"} "Leave " (topic/singular topic)]]]
-
-           (and max-attendees (>= attendees max-attendees))
-           [:small " No spot left!"]
-
-           (not user-is-organizer)
-           [:form.inline-form {:action (str event-url "/join") :method "post"}
-            [:button.btn.btn-small {:type "submit"} "Join " (topic/singular topic)]])]]
-       [:small "There is no organizer yet! can you take over?"
-        [:form.inline-form {:action (str event-url "/organize") :method "post"}
-        [:button.btn.btn-small {:type "submit"} "Organize " (topic/singular topic)]]])
-     ]))
-
 (defn overview [{:keys [path-params ctx session]}]
   (let [topic (topic/get-by-slug (:topic path-params) ctx)
         topic-url (str "/for/" (:topic path-params))
@@ -226,7 +181,7 @@
           [:a.nav-item {:href (str "/for/" (:topic/slug topic) "/edit")}
            "Edit Topic Meta"])
         [:a.nav-item {:href "/logout"} "Logout"]]
-       [:ul.overview-list (map #(vector :li (event-item % topic user ctx)) events)]])))
+       [:ul.overview-list (map #(vector :li (event-page/item % topic user ctx)) events)]])))
 
 (defn delete [{:keys [ctx path-params]}]
   (let [topic-id (:id (topic/get-by-slug (:topic path-params) ctx))]

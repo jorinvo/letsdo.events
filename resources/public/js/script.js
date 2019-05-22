@@ -11,7 +11,7 @@
     $input.addEventListener('change', function() {
       var file = this.files[0];
       if(file.size > 5*1024*1024) {
-        alert('Error: Exceeded size 5MB');
+        alert('Exceeded size 5MB');
         return;
       }
       $message.classList.add('hide');
