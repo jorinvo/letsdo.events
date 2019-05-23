@@ -1,10 +1,9 @@
 # letsdo.events
 
+- package as uberjar
+
 - send mail
 
-
-- spec for config
-- package as uberjar
 
 - HTTPS via letsencrypt support
 
