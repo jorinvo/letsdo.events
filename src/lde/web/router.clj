@@ -18,18 +18,45 @@
             [lde.web :as web]
             [lde.web.css :as css]
             [lde.web.js :as js]
+            [lde.web.error :as error]
             [lde.web.pages.topic :as topic-page]
             [lde.web.pages.event :as event-page]
             [lde.web.pages.home :as home]
             [lde.web.pages.login :as login])
   (:import [java.util.regex Pattern]))
 
-(defn authorize [handler]
-  (fn [req]
-    (if (get-in req [:session :id])
+(defn authorize-user [handler]
+  (fn [{:as req {user-id :id} :session}]
+    (if user-id
       (handler req)
-      {:status 403
-       :body "unauthorized"})))
+      (response/redirect (str "/login?goto=" (:uri req))))))
+
+; TODO For now all topics are still public
+(defn authorize-topic-read [handler]
+  (fn [{:as req :keys [topic ctx] {user-id :id} :session}]
+    (if (or user-id
+            (= :public (:topic/visibility topic)))
+      (handler req)
+      (error/render {:status 404
+                     :title "Not found"}
+                    ctx))))
+
+(defn authorize-topic-edit [handler]
+  (fn [{:as req :keys [topic ctx] {user-id :id} :session}]
+    (if (topic/admin? ctx (:id topic) user-id)
+      (handler req)
+      (error/render {:status 403
+                     :title "Not allowed"}
+                    ctx))))
+
+(defn authorize-event-edit [handler]
+  (fn [{:as req :keys [event ctx] {user-id :id} :session}]
+    (if (or (event/organizer? ctx (:id event) user-id)
+            (= user-id (:event/creator event)))
+      (handler req)
+      (error/render {:status 403
+                     :title "Not allowed"}
+                    ctx))))
 
 (defn req-str [s]
   (and (string? s)
@@ -138,27 +165,37 @@
 (s/def ::signup-form
   (s/keys :req-un [::name ::email ::password ::link]))
 
-(s/def ::token string?)
 
-(s/def ::login-query
-  (s/keys :req-un [::token]))
+(s/def ::goto string?)
+(s/def ::goto-query
+  (s/keys :opt-un [::goto]))
+
+(s/def ::token string?)
+(s/def ::mail-login-query
+  (s/keys :req-un [::token]
+          :opt-un [::goto]))
 
 (defn routes []
   [["/css/main.css" {:get css/handler}]
    ["/js/script.js" {:get js/handler}]
    ["/" {:get home/handler}]
    ["/login"
-    ["" {:get login/handler
+    ["" {:get {:handler login/handler
+               :parameters {:query ::goto-query}}
          :post {:handler login/post-login
-                :parameters {:form ::login-form}}}]
+                :parameters {:query ::goto-query
+                             :form ::login-form}}}]
     ["/mail" {:get {:handler login/mail
-                    :parameters {:query ::login-query}}}]
+                    :parameters {:query ::mail-login-query}}}]
     ["/mail-confirm" {:get login/mail-confirm}]]
-   ["/signup" {:get login/handler
+   ["/signup" {:get {:handler login/handler
+                     :parameters {:query ::goto-query}}
                :post {:handler login/post-signup
-                      :parameters {:form ::signup-form}}}]
-   ["/logout" {:get login/logout}]
-   ["/new" {:middleware [authorize]
+                      :parameters {:query ::goto-query
+                                   :form ::signup-form}}}]
+   ["/logout" {:get {:handler login/logout
+                      :parameters {:query ::goto-query}}}]
+   ["/new" {:middleware [authorize-user]
             :get topic-page/new
             :post {:handler topic-page/post
                    :parameters {:multipart {:name req-str
@@ -168,10 +205,11 @@
                                             :image ::image}}}}]
    ["/for"
     ["" {:get (constantly (response/redirect "/" :permanent-redirect))}]
-    ["/:topic" {:middleware [authorize
-                             topic-page/load-middleware]}
+    ["/:topic" {:middleware [topic-page/load-middleware
+                             authorize-topic-read]}
      ["" {:get topic-page/overview}]
-     ["/edit" {:get topic-page/edit
+     ["/edit" {:middleware [authorize-topic-edit]
+               :get topic-page/edit
                :post {:handler topic-page/post-edit
                       :parameters {:multipart {:name req-str
                                                :description string?
@@ -179,8 +217,10 @@
                                                :visibility #(contains? topic/visibilities (keyword %))
                                                :image ::image
                                                :delete-image string?}}}}]
-     ["/delete" {:post topic-page/delete}]
-     ["/new" {:get event-page/new
+     ["/delete" {:middleware [authorize-topic-edit]
+                 :post topic-page/delete}]
+     ["/new" {:middleware [authorize-user]
+              :get event-page/new
               :post {:handler event-page/post
                      :parameters {:multipart {:name req-str
                                               :description req-str
@@ -197,7 +237,8 @@
                   (response/redirect (str "/for/" t) :permanent-redirect))}]
       ["/:event" {:middleware [event-page/load-middleware]}
        ["" {:get event-page/get}]
-       ["/edit" {:get event-page/edit
+       ["/edit" {:middleware [authorize-event-edit]
+                 :get event-page/edit
                  :post {:handler event-page/post-edit
                         :parameters {:multipart {:name req-str
                                                  :description req-str
@@ -209,10 +250,18 @@
                                                  :location string?
                                                  :image ::image
                                                  :delete-image string?}}}}]
-       ["/organize" {:post event-page/organize}]
-       ["/join" {:post event-page/join}]
-       ["/leave" {:post event-page/leave}]
-       ["/delete" {:post event-page/delete}]]]]]])
+       ["/organize" {:middleware [authorize-user]
+                     :get event-page/organize
+                     :post event-page/organize}]
+       ["/join" {:middleware [authorize-user]
+                 :get event-page/join
+                 :post event-page/join}]
+       ["/leave" {:middleware [authorize-user]
+                  :get event-page/leave
+                  :post event-page/leave}]
+       ["/delete" {:middleware [authorize-event-edit]
+                   :get event-page/delete
+                   :post event-page/delete}]]]]]])
 
 (defn make-context-middleware [ctx]
   (fn [handler]
@@ -236,8 +285,13 @@
                            (multipart/create-multipart-middleware {:store (byte-array-store)})]}})
     (ring/routes
       (ring/redirect-trailing-slash-handler)
-      (ring/create-default-handler))
+      (ring/create-default-handler {:not-found (constantly (error/render {:status 404
+                                                                          :title "404 - Not found"}
+                                                                         ctx))
+                                    :method-not-allowed (constantly (error/render {:status 403
+                                                                                   :title "403 - Method not allowed"}
+                                                                                  ctx))}))
     {:middleware [parameters-middleware
-               wrap-keyword-params
-               (make-session-middleware ctx)
-               (make-context-middleware ctx)]}))
+                  wrap-keyword-params
+                  (make-session-middleware ctx)
+                  (make-context-middleware ctx)]}))

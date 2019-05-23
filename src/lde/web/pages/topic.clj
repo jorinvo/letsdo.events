@@ -6,7 +6,8 @@
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
-    [lde.web :refer [render escape-with-br multipart-image-to-data-uri image-mime-types]]
+    [lde.web :refer [render escape-with-br multipart-image-to-data-uri image-mime-types goto-url]]
+    [lde.web.error :as error]
     [lde.web.pages.event :as event-page]
     [lde.core.topic :as topic]
     [lde.core.image :as image]
@@ -17,8 +18,9 @@
   (fn [{:as req :keys [path-params ctx]}]
     (if-let [topic (topic/get-by-slug (:topic path-params) ctx)]
       (handler (assoc req :topic topic))
-      {:status 404
-       :body "Topic not found"})))
+      (error/render {:status 404
+                     :title "Topic not found"}
+                    ctx))))
 
 (defn new [req]
   (let [path (-> req get-match match->path)]
@@ -176,13 +178,17 @@
          [:img.logo {:src image
                      :alt "logo"}])
        [:h2 (:topic/description topic)]
-       [:nav
-        [:a.nav-item {:href (str "/for/" (:topic/slug topic) "/new")}
-         "New " (topic/singular topic)]
-        (when (topic/admin? ctx (:id topic) (:id user))
-          [:a.nav-item {:href (str "/for/" (:topic/slug topic) "/edit")}
-           "Edit Topic Meta"])
-        [:a.nav-item {:href "/logout"} "Logout"]]
+       (if user
+         [:nav
+          [:a.nav-item {:href (str "/for/" (:topic/slug topic) "/new")}
+           "New " (topic/singular topic)]
+          (when (topic/admin? ctx (:id topic) (:id user))
+            [:a.nav-item {:href (str "/for/" (:topic/slug topic) "/edit")}
+             "Edit Topic Meta"])
+          [:a.nav-item {:href (goto-url "/logout" topic-url)} "Logout"]]
+         [:nav
+          [:a.nav-item {:href (goto-url "/login" topic-url)} "Login"]
+          [:a.nav-item {:href (goto-url "/signup" topic-url)} "Signup"]])
        [:ul.overview-list (map #(vector :li (event-page/item % topic user ctx)) events)]])))
 
 (defn delete [{:keys [ctx topic]}]

@@ -119,8 +119,9 @@
              new-event))))
 
 (defn assoc-attendee-count [event ctx]
-  (assoc event :event/attendee-count
-         (db/count-by-attribute ctx :attendee/event (:id event))))
+  (when event
+    (assoc event :event/attendee-count
+           (db/count-by-attribute ctx :attendee/event (:id event)))))
 
 (defn get-by-topic-and-slug [ctx topic-id slug]
   (-> (db/get-by-attributes ctx {:event/topic topic-id

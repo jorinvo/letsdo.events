@@ -38,6 +38,8 @@
   (when-let [user (db/get-by-attribute ctx :user/email email)]
     (jwt/sign {:user-id (:id user)} (settings/get-jwt-secret ctx))))
 
-(defn send-login-mail [ctx email]
+(defn send-login-mail [ctx email goto]
   (browse-url (str "http://localhost:3000/login/mail?token="
-                   (get-token-for-mail ctx email))))
+                   (get-token-for-mail ctx email)
+                   (when goto
+                     (str "&goto=" goto)))))

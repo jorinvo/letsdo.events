@@ -7,7 +7,8 @@
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
     [hiccup.core :refer [h]]
-    [lde.web :refer [render escape-with-br multipart-image-to-data-uri image-mime-types]]
+    [lde.web :refer [render escape-with-br multipart-image-to-data-uri image-mime-types goto-url]]
+    [lde.web.error :as error]
     [lde.core.event :as event]
     [lde.core.image :as image]
     [lde.core.topic :as topic]
@@ -17,8 +18,11 @@
   (fn [{:as req :keys [path-params topic ctx]}]
     (if-let [event (event/get-by-topic-and-slug ctx (:id topic) (:event path-params))]
       (handler (assoc req :event event))
-      {:status 404
-       :body (str (topic/singular topic) " not found")})))
+      (error/render {:status 404
+                     :title (str (topic/singular topic) " not found")
+                     :link (str "/for/" (:topic/slug topic))
+                     :link-text (str "Go back to " (str/lower-case (topic/singular topic)) " overview")}
+                    ctx))))
 
 (defn format-date [d]
   (let [ld (time/local-date d)]
@@ -116,6 +120,7 @@
 (defn get [{:keys [ctx topic event session]}]
   (let [title (:event/name event)
         topic-url (str "/for/" (:topic/slug topic))
+        event-url (str topic-url "/about/" (:event/slug event))
         user (user/get-by-id ctx (:id session))]
     (render
       ctx
@@ -125,6 +130,15 @@
        [:a {:href topic-url}
         [:h1 (:topic/name topic)]]
        [:h2 (:topic/description topic)]
+       [:nav
+        [:a.nav-item {:href (str "/for/" (:topic/slug topic))}
+         (topic/singular topic) " overview"]
+        (when user
+          [:a.nav-item {:href (goto-url "/logout" event-url)} "Logout"])
+        (when-not user
+          [:a.nav-item {:href (goto-url "/login" event-url)} "Login"])
+        (when-not user
+          [:a.nav-item {:href (goto-url "/signup" event-url)} "Signup"])]
        (item event topic user ctx)])))
 
 (defn edit [{:keys [ctx topic event session]}]

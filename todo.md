@@ -2,9 +2,6 @@
 
 - send mail
 
-- redirect unauthorized to login with redirect URI
-    letsdo.events/login?goto=heart-of-clojure/about/cljdoc-hacking
-- redirect not found
 
 - spec for config
 - package as uberjar

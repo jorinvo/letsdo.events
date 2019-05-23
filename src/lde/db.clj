@@ -156,7 +156,9 @@
     false))
 
 (defn exists-by-attributes [ctx attrs]
-  (< 0 (count-by-attributes ctx attrs)))
+  (if (some nil? (vals attrs))
+    false
+    (< 0 (count-by-attributes ctx attrs))))
 
 (defn exists-by-attribute [ctx attr value]
   (exists-by-attributes ctx {attr value}))
