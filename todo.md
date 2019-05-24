@@ -3,11 +3,9 @@
 - HTTPS via letsencrypt support
   - do in nginx
 
-
-
-- sorting of event list
-- event listing filters
-- event listing search
+Upcoming events 
+Newly created events
+My events
 
 - escape html when rendering
 
@@ -45,6 +43,12 @@
   - joining or interest subscribe automatically
   - can unsubscribe
 - calendar integration
+
+Cache js 
+
+How to prevent mail and sign up spam? 
+
+Pagination for event and topic list
 
 - limit input char length (against evil input)
 - spec for API responses
