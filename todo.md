@@ -13,6 +13,8 @@ Upcoming events
 Newly created events
 My events
 
+Share form image form component
+
 - escape html when rendering
 
 - catch errors and never show to client
@@ -24,9 +26,12 @@ My events
 
 - crop image size in browser
 
+Refactor links and goto logic in a helper
 
-- allow adding and removing organizers
-
+Request joining organizers
+Accept organizer
+Stop organizing
+Remove an organizer
 
 - use same data for schema and for key selection
 - put server in ctx
@@ -49,6 +54,8 @@ My events
   - joining or interest subscribe automatically
   - can unsubscribe
 - calendar integration
+
+List all your subscriptions
 
 Cache js 
 
@@ -89,8 +96,6 @@ Pagination for event and topic list
 - event interest
 - schedule/commit
 
-- Filter by organizer
-
 - setup possible dates
 
 - caching headers
@@ -106,8 +111,6 @@ Pagination for event and topic list
   - sync form meetup.com
 - i18n
 - a11y
-
-- validate image dimension on server-side
 
 - data generation via API+specs
 - use API specs for generative testing
