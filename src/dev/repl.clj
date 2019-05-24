@@ -18,7 +18,7 @@
     [lde.config :refer [get-config]]))
 
 (defn make-context []
-  (-> {:config (get-config)}
+  (-> {:config (get-config "config.edn")}
       (db/init)))
 
 (defonce ctx (atom (make-context)))
@@ -175,7 +175,7 @@
 (user/create {:email "ho@jorin.me"} @ctx)
 
 (user/login-with-token @ctx
-                       (user/get-token-for-mail @ctx "hi@jorin.me"))
+                       (user/get-token-for-email @ctx "hi@jorin.me"))
 
 (settings/get-jwt-secret @ctx)
 

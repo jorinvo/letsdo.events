@@ -74,7 +74,7 @@
   (s/keys :opt-un [::goto]))
 
 (s/def ::token string?)
-(s/def ::mail-login-query
+(s/def ::email-login-query
   (s/keys :req-un [::token]
           :opt-un [::goto]))
 
@@ -88,9 +88,9 @@
          :post {:handler login/post-login
                 :parameters {:query ::goto-query
                              :form ::login-form}}}]
-    ["/mail" {:get {:handler login/mail
-                    :parameters {:query ::mail-login-query}}}]
-    ["/mail-confirm" {:get login/mail-confirm}]]
+    ["/email" {:get {:handler login/email
+                    :parameters {:query ::email-login-query}}}]
+    ["/email-confirm" {:get login/email-confirm}]]
    ["/signup" {:get {:handler login/handler
                      :parameters {:query ::goto-query}}
                :post {:handler login/post-signup

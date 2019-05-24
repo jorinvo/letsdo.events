@@ -41,7 +41,7 @@
             [:div
              [:input.input-field {:type "password"
                                   :name "password"}]]
-            [:small "No need for a password, you get a mail instead"]]]
+            [:small "No need for a password, you get an email instead"]]]
           [:div.form-field.link-field
            [:label
             [:div "Link to your website / social media / ..."]
@@ -55,8 +55,8 @@
                    {{:keys [email password]} :form
                     {:keys [goto]} :query} :parameters}]
   (if (empty? password)
-    (do (user/send-login-mail ctx email goto)
-        (response/redirect "/login/mail-confirm" :see-other))
+    (do (user/send-login-email ctx email goto)
+        (response/redirect "/login/email-confirm" :see-other))
     (if-let [user (user/login ctx email password)]
       (-> (response/redirect (if goto goto "/") :see-other)
           (assoc :session (select-keys user [:id])))
@@ -75,7 +75,7 @@
   (-> (response/redirect (if goto goto "/"))
       (assoc :session nil)))
 
-(defn mail [{:keys [ctx]
+(defn email [{:keys [ctx]
              {{:keys [token goto]} :query} :parameters}]
   (if token
     (if-let [user (user/login-with-token ctx token)]
@@ -84,7 +84,7 @@
       (response/bad-request "Invalid token"))
     (response/bad-request "No token")))
 
-(defn mail-confirm [{:keys [ctx]}]
+(defn email-confirm [{:keys [ctx]}]
   (render
     ctx
     {:title "Login link sent"}
@@ -92,4 +92,4 @@
      [:h1 "Let's do events!"]
      [:h2 "We sent you a login link"]
      [:div
-      [:p "Please check your mails."]]]))
+      [:p "Please check your email."]]]))

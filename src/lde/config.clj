@@ -98,11 +98,12 @@
                 (gen/return (str local-part "@" hostname-part))))))
 
 (s/def ::user string?)
-(s/def ::password string?)
+(s/def ::pass string?)
+(s/def ::ssl boolean?)
 (s/def ::from ::email)
 (s/def ::default
   (s/keys :req-un [::from]
-          :opt-un [::host ::user ::password ::port]))
+          :opt-un [::host ::user ::pass ::port ::ssl]))
 (s/def ::smtp
   (s/keys :opt-un [::default]))
 

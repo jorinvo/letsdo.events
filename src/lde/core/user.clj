@@ -2,6 +2,7 @@
   (:require [clojure.set :refer [rename-keys]]
             [clojure.string :as str]
             [buddy.sign.jwt :as jwt]
+            [postal.core :as postal]
             [lde.auth :as auth]
             [lde.core.settings :as settings]
             [lde.db :as db]))
@@ -34,34 +35,47 @@
                                 (catch Exception e nil))]
     (db/get-by-id ctx id)))
 
-(defn get-by-mail [email ctx]
+(defn get-by-email [email ctx]
   (db/get-by-attribute ctx :user/email email))
 
-(defn get-token-for-mail [user-id ctx]
+(defn get-token-for-email [user-id ctx]
   (jwt/sign {:user-id user-id} (settings/get-jwt-secret ctx)))
 
-(defn get-mail-login-link [base-url token goto]
+(defn get-email-login-link [base-url token goto]
   (str base-url
-       "/login/mail?token="
+       "/login/email?token="
        token
        (when goto
          (str "&goto=" goto))))
 
-(defn render-mail [login-link user-name]
+(defn render-email [login-link user-name system-title]
   (str "Hi " (or user-name "there") "!\n\n"
-       "Please click the link below to login:\n\n"
+       "Please click the link below to login to "
+       system-title
+       ":\n\n"
        login-link))
 
-(defn send-mail [mail-content email {{{mail-config :default} :smtp} :config}]
-  (if mail-config
-    (prn mail-content)
-    (println "WARNING: SMTP is not configured. Trying to send mail:\n\n"
-             mail-content)))
+(defn send-email [{:keys [to subject body]}
+                 {{{email-config :default} :smtp} :config}]
+  (if email-config
+    (postal/send-message email-config
+                         {:from (:from email-config)
+                          :to to
+                          :subject subject
+                          :body body})
+    (println "WARNING: SMTP is not configured. Trying to send email:\n\n"
+             body)))
 
-(defn send-login-mail [ctx email goto]
-  (when-let [user (get-by-mail email ctx)]
-    (let [token (get-token-for-mail (:id user) ctx)
-         login-link (get-mail-login-link (-> ctx :config :public-base-url) token goto)
-         mail-content (render-mail login-link (:user/name user))]
-      (send-mail mail-content email ctx))))
+(defn send-login-email [ctx email goto]
+  (when-let [user (get-by-email email ctx)]
+    (let [token (get-token-for-email (:id user) ctx)
+         login-link (get-email-login-link (-> ctx :config :public-base-url) token goto)
+         system-title (-> ctx :config :content :system-title)
+         body (render-email login-link
+                           (:user/name user)
+                           system-title)]
+      (send-email {:to email
+                  :subject (str system-title " Login Link")
+                  :body body}
+                 ctx))))
 

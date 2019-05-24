@@ -1,10 +1,5 @@
 # letsdo.events
 
-- send mail
-  - use simple smtp from login@letsdo.events
-  - email template
-
-
 - HTTPS via letsencrypt support
   - do in nginx
 
