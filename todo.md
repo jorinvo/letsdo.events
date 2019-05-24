@@ -3,6 +3,12 @@
 - HTTPS via letsencrypt support
   - do in nginx
 
+Fix Uberjar path and target
+
+Comment deps file
+
+Refactor dev NS to separate server stuff
+
 Upcoming events 
 Newly created events
 My events
