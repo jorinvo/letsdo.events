@@ -6,20 +6,6 @@
     [lde.web :refer [render goto-url]]
     [lde.core.user :as user]))
 
-(def login-click
-  "var cl = document.getElementById('login-container').classList;
-  cl.add('login');
-  cl.remove('signup');
-  document.querySelector('title').innerHTML = 'Login';
-  history.replaceState({}, 'Login', '/login');")
-
-(def signup-click
-  "var cl = document.getElementById('login-container').classList;
-  cl.add('signup');
-  cl.remove('login');
-  document.querySelector('title').innerHTML = 'Signup';
-  history.replaceState({}, 'Signup', '/signup');")
-
 (defn handler [{:as req :keys [ctx]
                 {user-id :id} :session
                 {{:keys [goto]} :query} :parameters}]
@@ -33,13 +19,11 @@
         [:div.login-container {:class (subs path 1)}
          [:h1.f1
           [:a.login-heading
-           {:href (goto-url "/login" goto)
-            :onClick login-click}
+           {:href (goto-url "/login" goto)}
            "Login"]
           " | "
           [:a.signup-heading
-           {:href (goto-url "/signup" goto)
-            :onClick signup-click}
+           {:href (goto-url "/signup" goto)}
            "Signup"]]
          [:form {:action (goto-url path goto) :method "post"}
           [:div.form-field.name-field

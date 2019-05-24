@@ -3,13 +3,15 @@
     [lde.web :refer [render]]
     [lde.core.topic :as topic]))
 
-(defn handler [{{user-id :id} :session ctx :ctx}]
+(defn handler [{{user-id :id} :session
+                {:as ctx
+                 {{{title :system-title} :content} :config}} :ctx}]
   (render
     ctx
-    {:title "Let's do events!"
+    {:title title
      :description "Hi"}
     [:div
-     [:h1 "Let's do events!"]
+     [:h1 title]
      [:h2 "All Topics"]
      (if user-id
        [:nav

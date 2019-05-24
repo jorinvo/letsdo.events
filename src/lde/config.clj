@@ -15,6 +15,8 @@
 (s/def ::db-dir (s/and string?
                        #(when (.exists (io/file %))
                           %)))
+(s/def ::system-title string?)
+(s/def ::content (s/keys :req-un [::system-title]))
 (s/def ::background-color string?)
 (s/def ::primary-color string?)
 (s/def ::text-color string?)
@@ -105,18 +107,19 @@
   (s/keys :opt-un [::default]))
 
 (s/def ::config
-  (s/keys :req-un [::port ::public-base-url ::db-dir]
+  (s/keys :req-un [::port ::public-base-url ::db-dir ::content]
           :opt-un [::style ::smtp]))
 
 (def default-config
   {:port 3000
    :public-base-url "http://localhost:3000"
    :db-dir "./db"
-   :style {:background-color  "#ffffff"
-           :primary-color  "#ff009a"
-           :text-color  "#252525"
-           :title-font  "serif"
-           :base-font  "sans-serif"}})
+   :content {:system-title "Let's do events!"}
+   :style {:background-color "#ffffff"
+           :primary-color "#ff009a"
+           :text-color "#252525"
+           :title-font "serif"
+           :base-font "sans-serif"}})
 
 (defn get-config
   ([]

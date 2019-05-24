@@ -1,13 +1,15 @@
 !(function () {
   var $ = document.querySelector.bind(document);
+  var $$ = document.querySelectorAll.bind(document);
+  var $title = $('title');
 
   var $input = $('#image-upload-input');
-  var $message = $('#image-upload-message');
-  var $image = $('#image-upload-preview');
-  var $clear = $('#image-upload-clear');
-  var $delete = $('#delete-image-input');
-
   if ($input) {
+    var $message = $('#image-upload-message');
+    var $image = $('#image-upload-preview');
+    var $clear = $('#image-upload-clear');
+    var $delete = $('#delete-image-input');
+
     $input.addEventListener('change', function() {
       var file = this.files[0];
       if(file.size > 5*1024*1024) {
@@ -31,6 +33,44 @@
       if ($delete) {
         $delete.value = 'true';
       }
+    });
+  }
+
+  var $loginContainer = $('.login-container');
+  if ($loginContainer) {
+    var $loginForm = $loginContainer.querySelector('form');
+    var $loginHeading = $('.login-heading');
+    $loginHeading.addEventListener('click', function(e) {
+      e.preventDefault();
+      $loginContainer.classList.add('login');
+      $loginContainer.classList.remove('signup');
+      $title.innerHTML = 'Login';
+      $loginForm.action = $loginHeading.href
+      history.replaceState({}, 'Login', $loginHeading.href);
+    });
+    var $signupHeading = $('.signup-heading');
+    $signupHeading.addEventListener('click', function(e) {
+      e.preventDefault();
+      $loginContainer.classList.add('signup');
+      $loginContainer.classList.remove('login');
+      $title.innerHTML = 'Signup';
+      $loginForm.action = $signupHeading.href
+      history.replaceState({}, 'Signup', $signupHeading.href);
+    });
+  }
+
+  var $$confirm = $$('[data-confirm]');
+  if ($$confirm) {
+    function listener(e) {
+      e.preventDefault();
+      var answer = confirm(this.attributes.getNamedItem('data-confirm').textContent);
+      if (answer) {
+        this.removeEventListener('click', listener);
+        this.click();
+      }
+    }
+    Array.from($$confirm).forEach(function($el) {
+      $el.addEventListener('click', listener);
     });
   }
 })();

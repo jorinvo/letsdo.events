@@ -1,5 +1,10 @@
 # letsdo.events
 
+description tag
+
+- login js
+
+
 - send mail
   - use simple smtp from login@letsdo.events
   - email template
@@ -25,9 +30,6 @@
 
 - crop image size in browser
 
-
-- confirm delete event
-- confirm delete topic
 
 - allow adding and removing organizers
 
@@ -88,7 +90,6 @@
 - schedule/commit
 
 - Filter by organizer
-- confirm() before unjoin
 
 - setup possible dates
 

@@ -7,20 +7,11 @@
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
     [lde.web :refer [render escape-with-br multipart-image-to-data-uri image-mime-types goto-url]]
-    [lde.web.error :as error]
     [lde.web.pages.event :as event-page]
     [lde.core.topic :as topic]
     [lde.core.image :as image]
     [lde.core.user :as user]
     [lde.core.event :as event]))
-
-(defn load-middleware [handler]
-  (fn [{:as req :keys [path-params ctx]}]
-    (if-let [topic (topic/get-by-slug (:topic path-params) ctx)]
-      (handler (assoc req :topic topic))
-      (error/render {:status 404
-                     :title "Topic not found"}
-                    ctx))))
 
 (defn new [req]
   (let [path (-> req get-match match->path)]
@@ -147,7 +138,10 @@
         " "
         [:a.cancel {:href url} "Cancel"]]
        [:form {:action (str url "/delete") :method "post"}
-        [:button.btn.btn-small {:type "submit"} "Delete Topic"]]])))
+        [:button.btn.btn-small
+         {:type "submit"
+          :data-confirm "Are you sure you want to delete the topic?"}
+         "Delete Topic"]]])))
 
 (defn post [{:keys [ctx session parameters]}]
   (let [topic (-> (:multipart parameters)
