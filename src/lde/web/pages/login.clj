@@ -14,8 +14,7 @@
       (response/redirect (if goto goto "/"))
       (render
         ctx
-        {:title "Login"
-         :description "Hi"}
+        {:title "Login"}
         [:div.login-container {:class (subs path 1)}
          [:h1.f1
           [:a.login-heading
@@ -88,8 +87,7 @@
 (defn mail-confirm [{:keys [ctx]}]
   (render
     ctx
-    {:title "Login link sent"
-     :description "Hi"}
+    {:title "Login link sent"}
     [:div
      [:h1 "Let's do events!"]
      [:h2 "We sent you a login link"]

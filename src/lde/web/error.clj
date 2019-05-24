@@ -9,8 +9,7 @@
   (web/render
     ctx
     {:status status
-     :title "Error"
-     :description "Error"}
+     :title title}
     [:div
      [:h1 "Let's do events!"]
      [:h2 title]

@@ -40,7 +40,7 @@
      [:nav
       {:margin-bottom "2rem"}
       [:.nav-item
-       {:padding-right "0.8rem"}]]
+       {:padding-right "1rem"}]]
      [:.btn
       {:border (str "0.1rem solid " primary-color)
        :font-size "1rem"
@@ -78,16 +78,14 @@
        :padding "0.4rem 0.6rem"
        :border (str "0.1rem solid " text-color)
        :max-width "100%"
-       :width "15rem"}
+       :width "18rem"}
       [:&:required {:box-shadow :none}]
       [:&.input-date
        {:width :auto}]
       [:&.input-time
        {:width :auto}]
       [:&.input-small
-       {:width "4rem"}]
-      [:&.input-wide
-       {:width "22rem"}]]
+       {:width "4rem"}]]
      [:.radio
       {:display :block
        :margin-top "0.5rem"}

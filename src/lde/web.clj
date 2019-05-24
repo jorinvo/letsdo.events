@@ -15,7 +15,8 @@
                  [:head
                   [:title title]
                   [:meta {:charset "utf-8"}]
-                  [:meta {:content description :name "description"}]
+                  (when description
+                    [:meta {:content description :name "description"}])
                   [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
                   (include-css "/css/main.css")
                   ; cannot use include-css since google fonts use | char which is not valid in a Java URI object

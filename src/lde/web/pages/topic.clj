@@ -17,8 +17,7 @@
   (let [path (-> req get-match match->path)]
     (render
       (:ctx req)
-      {:title "Setup New Topic"
-       :description "Hi"}
+      {:title "Setup New Topic"}
       [:div
        [:h1
         "Setup new topic"]
@@ -33,7 +32,7 @@
         [:div.form-field
          [:label [:div "Description"]
           [:input.input-field {:type "text"
-                   :name "description"}]]]
+                               :name "description"}]]]
         [:div.form-field.image-upload
          [:label [:div "Select a logo"]
           [:div [:img#image-upload-preview { :alt "logo"
@@ -73,11 +72,10 @@
   (let [url (str "/for/" (:topic/slug topic))]
     (render
       ctx
-      {:title "Edit Topic"
-       :description "Hi"}
+      {:title (str "Edit Topic: " (:topic/name topic))}
       [:div
        [:h1
-        "Edit topic"]
+        "Edit Topic"]
        [:form {:action (str url "/edit")
                :method "post"
                :enctype "multipart/form-data"}
@@ -158,13 +156,14 @@
     (response/redirect (str "/for/" (:topic/slug new-topic)) :see-other)))
 
 (defn overview [{:keys [topic ctx session]}]
-  (let [topic-url (str "/for/" (:topic/slug topic))
+  (let [title (:topic/name topic)
+        topic-url (str "/for/" (:topic/slug topic))
         events (event/list-by-topic (:id topic) ctx)
         user (user/get-by-id ctx (:id session))]
     (render
       ctx
-      {:title (:topic/name topic)
-       :description "Hi"}
+      {:title title
+       :description (str title " - " (:topic/description topic))}
       [:div
        [:a {:href topic-url}
         [:h1 (:topic/name topic)]]

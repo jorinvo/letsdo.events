@@ -29,23 +29,24 @@
                              :event/end-time]}]
   (let [start-end-same-day (= start-date end-date)]
     (when (or start-date start-time end-date end-time)
-      [:div
-       [:small
-        (when start-date
-          (format-date start-date))
-        (when start-time
-          (str (when start-date
-                 ", ")
-               (format-time start-time)))
-        (when (or (and end-date (not start-end-same-day))
-                  end-time)
-          " until ")
-        (when (and end-date (not start-end-same-day))
-          (str (format-date end-date)
-               (when end-date
-                 ", ")))
-        (when end-time
-          (format-time end-time))]])))
+      (not-empty
+        (str
+          (when start-date
+            (format-date start-date))
+          (when start-time
+            (str (when start-date
+                   ", ")
+                 (format-time start-time)))
+          (when (or (and end-date (not start-end-same-day))
+                    end-time)
+            " until ")
+          (when (and end-date (not start-end-same-day))
+            (str (format-date end-date)
+                 (when end-date
+                   ", ")))
+          (when end-time
+            (format-time end-time)))
+        ))))
 
 (comment
   (require
@@ -71,7 +72,7 @@
      (when-let [image (image/get-by-hash (:event/image event) ctx)]
        [:img.logo {:src image
                    :alt "event image"}])
-     (date-and-time event)
+     [:div [:small (date-and-time event)]]
      (when location
        [:small (h location)])
      [:p (escape-with-br (:event/description event))]
@@ -104,19 +105,24 @@
            (not user-is-organizer)
            [:form.inline {:action (str event-url "/join") :method "post"}
             [:button.btn.btn-small {:type "submit"} "Join " (topic/singular topic)]])]]
-       [:small "There is no organizer yet! can you take over?"
+       [:small "There is no organizer yet! Can you take over?"
         [:form.inline {:action (str event-url "/organize") :method "post"}
         [:button.btn.btn-small {:type "submit"} "Organize " (topic/singular topic)]]])]))
 
 (defn get [{:keys [ctx topic event session]}]
-  (let [title (:event/name event)
+  (let [title (str (:event/name event) " - " (:topic/name topic))
         topic-url (str "/for/" (:topic/slug topic))
         event-url (str topic-url "/about/" (:event/slug event))
         user (user/get-by-id ctx (:id session))]
     (render
       ctx
       {:title title
-       :description "hi"}
+       :description (str title ": "
+                         (when-let [d (date-and-time event)]
+                           (str "Date and Time: " d " - "))
+                         (when-let [l (:event/location event)]
+                           (str "Location: " l " - "))
+                         (:event/description event))}
       [:div
        [:a {:href topic-url}
         [:h1 (:topic/name topic)]]
@@ -133,17 +139,13 @@
        (item event topic user ctx)])))
 
 (defn edit [{:keys [ctx topic event session]}]
-  (let [title (:event/name event)
-        topic-url (str "/for/" (:topic/slug topic))
+  (let [title (str "Edit " (topic/singular topic) ": " (:event/name event))
         user (user/get-by-id ctx (:id session))]
     (render
       ctx
-      {:title title
-       :description "hi"}
+      {:title title}
       [:div
-       [:a {:href topic-url}
-        [:h1 (:topic/name topic)]]
-       [:h2 (:topic/description topic)]
+       [:h1 "Edit " (topic/singular topic)]
        (if (or (event/organizer? ctx (:id event) (:id user))
                (= (:id user) (:event/creator event)))
          (let [url (str "/for/" (:topic/slug topic) "/about/" (:event/slug event))
@@ -167,7 +169,7 @@
                  :required true}]]]
              [:div.form-field
               [:label [:div "Description" [:sup " *"]]
-               [:textarea.input-field.input-wide
+               [:textarea.input-field
                 {:type "text"
                  :name "description"
                  :required true
@@ -236,18 +238,21 @@
 
 (defn new [{:as req :keys [topic ctx]}]
   (let [path (-> req get-match match->path)
-        title (str "Plan a new " (str/lower-case (topic/singular topic)))]
+        topic-url (str "/for/" (:topic/slug topic))
+        sub-title (str "Plan a New " (topic/singular topic))
+        title (str sub-title " For " (:topic/name topic))]
     (render
       ctx
-      {:title title
-       :description "Hi"}
+      {:title title}
       [:div
-       [:h1.f1 title]
+       [:a {:href topic-url}
+        [:h1 (:topic/name topic)]]
+       [:h2 sub-title]
        [:form {:action path
                :method "post"
                :enctype "multipart/form-data"}
         [:div.form-field
-         [:label [:div (topic/singular topic) " title" [:sup " *"]]
+         [:label [:div (topic/singular topic) " Title" [:sup " *"]]
           [:input.input-field
            {:type "text"
             :name "name"
@@ -262,7 +267,7 @@
             label])]
         [:div.form-field
          [:label [:div "Description" [:sup " *"]]
-          [:textarea.input-field.input-wide
+          [:textarea.input-field
            {:type "text"
             :name "description"
             :required true

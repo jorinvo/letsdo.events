@@ -5,11 +5,10 @@
 
 (defn handler [{{user-id :id} :session
                 {:as ctx
-                 {{{title :system-title} :content} :config}} :ctx}]
+                 {{title :system-title} :content} :config} :ctx}]
   (render
     ctx
-    {:title title
-     :description "Hi"}
+    {:title title}
     [:div
      [:h1 title]
      [:h2 "All Topics"]

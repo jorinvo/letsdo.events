@@ -1,10 +1,5 @@
 # letsdo.events
 
-description tag
-
-- login js
-
-
 - send mail
   - use simple smtp from login@letsdo.events
   - email template
