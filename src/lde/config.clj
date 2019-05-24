@@ -7,6 +7,11 @@
     [clojure.test.check.generators :as gen]))
 
 (s/def ::port (s/int-in 1 65536))
+(s/def ::public-base-url (s/and string?
+                                #(try (io/as-url (if (= "/" (last %))
+                                                   (subs % 0 (dec (count %)))
+                                                   %))
+                                      (catch Exception e nil))))
 (s/def ::db-dir (s/and string?
                        #(when (.exists (io/file %))
                           %)))
@@ -94,23 +99,24 @@
 (s/def ::password string?)
 (s/def ::from ::email)
 (s/def ::default
-  (s/keys :req-un [::host ::from]
-          :opt-un [::user ::password ::port]))
+  (s/keys :req-un [::from]
+          :opt-un [::host ::user ::password ::port]))
 (s/def ::smtp
   (s/keys :opt-un [::default]))
 
 (s/def ::config
-  (s/keys :req-un [::port ::db-dir]
+  (s/keys :req-un [::port ::public-base-url ::db-dir]
           :opt-un [::style ::smtp]))
 
 (def default-config
   {:port 3000
+   :public-base-url "http://localhost:3000"
    :db-dir "./db"
    :style {:background-color  "#ffffff"
-           :primary-color  "rgb(226, 95, 125)"
+           :primary-color  "#ff009a"
            :text-color  "#252525"
-           :title-font  "'Halant', serif"
-           :base-font  "'Nunito', sans-serif"}})
+           :title-font  "serif"
+           :base-font  "sans-serif"}})
 
 (defn get-config
   ([]

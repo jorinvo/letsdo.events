@@ -5,7 +5,7 @@
     [clojure.spec.alpha :as s]
     [clojure.test.check.generators :as gen]
     [java-time :as time]
-    [cuerdas.core :as cuerdas]
+    [lde.core.util :as util]
     [lde.core.image :as image]
     [lde.db :as db]))
 
@@ -66,7 +66,7 @@
                              :event/end-time]))
 
 (defn- unique-slug [event-name ctx]
-  (let [base (cuerdas/slug event-name)]
+  (let [base (util/slug event-name)]
     (if (db/exists-by-attribute ctx :event/slug base)
       (loop [n 2]
         (let [slug (str base "-" n)]

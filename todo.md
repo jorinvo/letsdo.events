@@ -1,21 +1,18 @@
 # letsdo.events
 
-- package as uberjar
-
 - send mail
+  - use simple smtp from login@letsdo.events
+  - email template
 
 
 - HTTPS via letsencrypt support
-
+  - do in nginx
 
 
 
 - sorting of event list
 - event listing filters
 - event listing search
-
-
-- error page
 
 - escape html when rendering
 

@@ -2,8 +2,8 @@
   (:refer-clojure :exclude [update])
   (:require
     [clojure.set :refer [rename-keys]]
-    [cuerdas.core :as cuerdas]
     [lde.db :as db]
+    [lde.core.util :as util]
     [lde.core.image :as image]
     [lde.core.event :as event]))
 
@@ -33,7 +33,7 @@
   (-> topic :topic/type types :singular))
 
 (defn unique-slug [topic-name ctx]
-  (let [base (cuerdas/slug topic-name)]
+  (let [base (util/slug topic-name)]
     (if (db/exists-by-attribute ctx :topic/slug base)
       (loop [n 2]
         (let [slug (str base "-" n)]
