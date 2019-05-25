@@ -32,6 +32,9 @@
 (defn singular [topic]
   (-> topic :topic/type types :singular))
 
+(defn plural [topic]
+  (-> topic :topic/type types :plural))
+
 (defn unique-slug [topic-name ctx]
   (let [base (util/slug topic-name)]
     (if (db/exists-by-attribute ctx :topic/slug base)

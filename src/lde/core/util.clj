@@ -11,6 +11,6 @@
   (some-> s
       (.toLowerCase)
       (str/escape +slug-tr-map+)
-      (replace #"[^\w\s]+" "")
-      (replace #"\s+" "-")))
+      (str/replace #"[^\w\s]+" "")
+      (str/replace #"\s+" "-")))
 

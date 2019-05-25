@@ -1,4 +1,6 @@
 .cpcache/
 .nrepl-port
 
+db
+target
 config.dev.edn

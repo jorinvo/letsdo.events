@@ -78,6 +78,9 @@
   (s/keys :req-un [::token]
           :opt-un [::goto]))
 
+(s/def ::whats #{"upcoming" "new" "mine"})
+(s/def ::overview-query (s/keys :opt-un [::whats]))
+
 (defn routes []
   [["/css/main.css" {:get css/handler}]
    ["/js/script.js" {:get js/handler}]
@@ -110,7 +113,8 @@
     ["" {:get (constantly (response/redirect "/" :permanent-redirect))}]
     ["/:topic" {:middleware [middleware/load-topic
                              middleware/authorize-topic-read]}
-     ["" {:get topic-page/overview}]
+     ["" {:get {:handler topic-page/overview
+                :parameters {:query ::overview-query}}}]
      ["/edit" {:middleware [middleware/authorize-topic-edit]
                :get topic-page/edit
                :post {:handler topic-form/post-edit

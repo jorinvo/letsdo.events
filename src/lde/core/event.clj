@@ -144,8 +144,49 @@
   (-> (db/get-by-id ctx id)
       (assoc-attendee-count ctx)))
 
-(defn list-by-topic [topic-id ctx]
-  (->> (db/list-by-attribute ctx :event/topic topic-id)
+(defn sort-by-upcoming
+  "sort order: end date, start date, no date sorted by created, past"
+  [events]
+  (let [rel (time/minus (time/local-date-time)
+                        (time/days 2))]
+    (->> events
+         (map #(vector % (if-let [s (if-let [ed (:event/end-date %)]
+                                      (str ed "T" (or (:event/end-time %)
+                                                      "23:59"))
+                                      (when-let [sd (:event/start-date %)]
+                                        (str sd "T" (or (:event/start-time %)
+                                                        "00:00"))))]
+                           (if (time/after? (time/local-date-time s) rel)
+                             (str "a-" s)
+                             (str "c-" s))
+                           (str "b-" (time/instant (:created %))))))
+         (sort-by second)
+         (map first))))
+
+(defn upcoming-by-topic [topic-id ctx]
+  (->> (db/list-ids-by-attribute ctx :event/topic topic-id)
+       (db/list-by-ids-with-timestamps ctx)
+       sort-by-upcoming
+       (map #(assoc-attendee-count % ctx))))
+
+(defn mine-by-topic [topic-id user-id ctx]
+  (->> (db/q ctx {:find ['?id]
+                   :where '[[?id :event/topic t]
+                            (or [x :attendee/event ?id]
+                                [x :organizer/event ?id])
+                            (or [x :attendee/user u]
+                                [x :organizer/user u])]
+                   :args [{'t topic-id
+                           'u user-id}]})
+       (map first)
+       (db/list-by-ids-with-timestamps ctx)
+       sort-by-upcoming
+       (map #(assoc-attendee-count % ctx))))
+
+(defn latest-by-topic [topic-id ctx]
+  (->> (db/list-ids-by-attribute ctx :event/topic topic-id)
+       (db/list-by-ids-with-timestamps ctx)
+       (sort-by :created #(compare %2 %1))
        (map #(assoc-attendee-count % ctx))))
 
 (defn joined? [ctx event-id user-id]
@@ -209,11 +250,10 @@
        (map first)))
 
 (defn get-organizer-names-by-event-id [ctx event-id]
-  (let [names (->> (db/q ctx {:find ['?name]
-                        :where '[[o :organizer/event event-id]
-                                 [o :organizer/user u]
-                                 [u :user/name ?name]]
-                        :args [{'event-id event-id}]})
-             (map first))]
-    (when-not (empty? names)
-      names)))
+  (->> (db/q ctx {:find ['?name]
+                  :where '[[o :organizer/event e]
+                           [o :organizer/user u]
+                           [u :user/name ?name]]
+                  :args [{'e event-id}]})
+       (map first)
+       not-empty))

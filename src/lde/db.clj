@@ -110,6 +110,22 @@
        (mapv #(vector :crux.tx/delete %))
        (submit! ctx)))
 
+(defn list-ids-by-attributes [{:keys [::crux]} attrs]
+  (let [db (crux/db crux)]
+    (->> (crux/q db {:find '[id]
+                     :where (mapv (fn [[attr value]]
+                                    ['id attr value]) attrs)})
+         (map first))))
+
+(defn list-ids-by-attribute [ctx attr value]
+  (list-ids-by-attributes ctx {attr value}))
+
+(defn get-id-by-attributes [ctx attrs]
+  (first (list-ids-by-attributes ctx attrs)))
+
+(defn get-id-by-attribute [ctx attr value]
+  (first (list-ids-by-attribute ctx attr value)))
+
 (defn list-by-attributes [{:keys [::crux]} attrs]
   (let [db (crux/db crux)]
     (->> (crux/q db {:find '[id]
@@ -163,8 +179,21 @@
 (defn exists-by-attribute [ctx attr value]
   (exists-by-attributes ctx {attr value}))
 
+(defn list-by-ids [{:keys [::crux]} ids]
+  (let [db (crux/db crux)]
+    (->> ids
+         (map #(crux->id (crux/entity db %))))))
+
 (defn get-by-id [{:keys [::crux]} id]
   (crux->id (crux/entity (crux/db crux) id)))
+
+(defn list-by-ids-with-timestamps [{:keys [::crux]} ids]
+  (let [db (crux/db crux)]
+    (->> ids
+         (map #(let [h (crux/history crux %)]
+                 (assoc (crux->id (crux/entity db %))
+                       :created (-> h last :crux.db/valid-time)
+                       :updated (-> h first :crux.db/valid-time)))))))
 
 (defn get-key [{:keys [::crux]} k]
   (let [db (crux/db crux)

@@ -1,17 +1,12 @@
 # letsdo.events
 
-- HTTPS via letsencrypt support
-  - do in nginx
+- DNS
+- Sync jar
+- SystemD
+- Nginx
+  - HTTPS via letsencrypt support
 
-Fix Uberjar path and target
-
-Comment deps file
-
-Refactor dev NS to separate server stuff
-
-Upcoming events 
-Newly created events
-My events
+- mark passed events
 
 Share form image form component
 
@@ -57,9 +52,9 @@ Remove an organizer
 
 List all your subscriptions
 
-Cache js 
+Cache js
 
-How to prevent mail and sign up spam? 
+How to prevent mail and sign up spam?
 
 Pagination for event and topic list
 

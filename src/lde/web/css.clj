@@ -40,7 +40,11 @@
      [:nav
       {:margin-bottom "2rem"}
       [:.nav-item
-       {:padding-right "1rem"}]]
+       {:padding-right "1rem"}]
+      [:.select-item
+       {:font-size "0.8rem"}
+       [:&.active
+        {:color primary-color}]]]
      [:.btn
       {:border (str "0.1rem solid " primary-color)
        :font-size "1rem"

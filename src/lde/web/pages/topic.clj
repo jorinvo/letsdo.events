@@ -155,11 +155,18 @@
                       (topic/update (:id topic) ctx))]
     (response/redirect (str "/for/" (:topic/slug new-topic)) :see-other)))
 
-(defn overview [{:keys [topic ctx session]}]
+(defn overview [{:keys [topic ctx session]
+                 {{:keys [whats]
+                   :or {whats "upcoming"}} :query} :parameters}]
   (let [title (:topic/name topic)
         topic-url (str "/for/" (:topic/slug topic))
-        events (event/list-by-topic (:id topic) ctx)
-        user (user/get-by-id ctx (:id session))]
+        topic-id (:id topic)
+        user-id (:id session)
+        events (case whats
+                 "upcoming" (event/upcoming-by-topic topic-id ctx)
+                 "new" (event/latest-by-topic topic-id ctx)
+                 "mine" (event/mine-by-topic topic-id user-id ctx))
+        user (user/get-by-id ctx user-id)]
     (render
       ctx
       {:title title
@@ -177,12 +184,30 @@
            "New " (topic/singular topic)]
           (when (topic/admin? ctx (:id topic) (:id user))
             [:a.nav-item {:href (str "/for/" (:topic/slug topic) "/edit")}
-             "Edit Topic Meta"])
+             "Edit Topic"])
           [:a.nav-item {:href (goto-url "/logout" topic-url)} "Logout"]]
          [:nav
           [:a.nav-item {:href (goto-url "/login" topic-url)} "Login"]
           [:a.nav-item {:href (goto-url "/signup" topic-url)} "Signup"]])
-       [:ul.overview-list (map #(vector :li (event-page/item % topic user ctx)) events)]])))
+       [:nav
+        [:a.nav-item.select-item
+         {:href topic-url
+          :class (when (= whats "upcoming")
+                   "active")}
+         (str "Upcoming " (topic/plural topic))]
+        [:a.nav-item.select-item
+         {:href (str topic-url "?whats=new")
+          :class (when (= whats "new")
+                   "active")}
+         (str "New " (topic/plural topic))]
+        (when user
+          [:a.nav-item.select-item
+           {:href (str topic-url "?whats=mine")
+            :class (when (= whats "mine")
+                     "active")}
+           (str "My " (topic/plural topic))])]
+       [:ul.overview-list (map #(vector :li (event-page/item % topic user ctx))
+                               events)]])))
 
 (defn delete [{:keys [ctx topic]}]
   (topic/delete ctx (:id topic))
