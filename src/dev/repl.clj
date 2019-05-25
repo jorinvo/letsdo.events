@@ -20,7 +20,7 @@
     [lde.config :refer [get-config]]))
 
 (defn make-context []
-  (-> {:config (get-config "config.edn")}
+  (-> {:config (get-config)}
       (db/init)))
 
 (defonce ctx (atom (make-context)))

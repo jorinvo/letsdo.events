@@ -1,12 +1,6 @@
 # letsdo.events
 
-- DNS
-- Sync jar
-- SystemD
-- Nginx
-  - HTTPS via letsencrypt support
-
-- mark passed events
+- mark past events
 
 Share form image form component
 
@@ -86,6 +80,8 @@ Pagination for event and topic list
 - anyone can join/invite only
 - invite
 - cancel invite
+
+- favicon
 
 - suggest activity/talk/thing
 - event interest

@@ -12,9 +12,9 @@
                                                    (subs % 0 (dec (count %)))
                                                    %))
                                       (catch Exception e nil))))
-(s/def ::db-dir (s/and string?
-                       #(when (.exists (io/file %))
-                          %)))
+(s/def ::db-dir #(and (string? %)
+                      (when (.exists (.getParentFile (io/file %)))
+                        %)))
 (s/def ::system-title string?)
 (s/def ::content (s/keys :req-un [::system-title]))
 (s/def ::background-color string?)
@@ -108,8 +108,8 @@
   (s/keys :opt-un [::default]))
 
 (s/def ::config
-  (s/keys :req-un [::port ::public-base-url ::db-dir ::content]
-          :opt-un [::style ::smtp]))
+  (s/keys :req-un [::port ::public-base-url ::db-dir]
+          :opt-un [::content ::style ::smtp]))
 
 (def default-config
   {:port 3000
@@ -126,11 +126,14 @@
   ([]
    (get-config nil))
   ([path]
-   (merge
-     default-config
-     (when path
-      (s/conform ::config
-                 (-> path
-                     io/reader
-                     java.io.PushbackReader.
-                     edn/read))))))
+   (if path
+     (let [f (-> path
+                 io/reader
+                 java.io.PushbackReader.
+                 edn/read)]
+       (if (s/valid? ::config f)
+         (merge default-config
+                (s/conform ::config f))
+         (do (s/explain ::config f)
+             nil)))
+     default-config)))

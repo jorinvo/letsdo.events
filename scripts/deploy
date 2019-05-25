@@ -1,0 +1,11 @@
+#!/bin/sh
+set -e
+
+echo "--> build"
+clojure -Auberjar
+
+echo "--> deploy"
+scp target/lde.jar letsdo.events:/tmp
+
+echo "--> copy jar and restart"
+ssh -tt letsdo.events 'sudo sh -c "cp /tmp/lde.jar /opt/jars/lde.jar && chown lde:lde /opt/jars/lde.jar && systemctl restart lde"'
