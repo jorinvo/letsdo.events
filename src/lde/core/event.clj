@@ -13,7 +13,7 @@
                   :organizer
                   {:text "I will be the organizer"}
                   :interest
-                  {:text "This is only somthing I'm interested in"}))
+                  {:text "This is only something I'm interested in"}))
 
 (def event-keys {:name :event/name
                  :description :event/description

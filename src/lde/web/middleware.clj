@@ -54,6 +54,6 @@
       (error/render {:status 404
                      :title (str (topic/singular topic) " not found")
                      :link (str "/for/" (:topic/slug topic))
-                     :link-text (str "Go back to " (str/lower-case (topic/singular topic)) " overview")}
+                     :link-text (str "Go back to all " (str/lower-case (topic/plural topic)))}
                     ctx))))
 

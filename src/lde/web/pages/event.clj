@@ -129,7 +129,7 @@
        [:h2 (:topic/description topic)]
        [:nav
         [:a.nav-item {:href (str "/for/" (:topic/slug topic))}
-         (topic/singular topic) " overview"]
+         "All " (str/lower-case (topic/plural topic))]
         (when user
           [:a.nav-item {:href (goto-url "/logout" event-url)} "Logout"])
         (when-not user
