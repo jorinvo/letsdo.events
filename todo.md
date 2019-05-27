@@ -1,7 +1,6 @@
 # letsdo.events
 
 - Share form image form component
-- escape html when rendering
 - catch errors and never show to client
 - nice error/spec messages for dev
 - readme with setup instructions

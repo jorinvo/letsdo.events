@@ -13,15 +13,15 @@
    :body (html {:mode :html}
                (html5
                  [:head
-                  [:title title]
+                  [:title (h title)]
                   [:meta {:charset "utf-8"}]
                   (when description
-                    [:meta {:content description :name "description"}])
+                    [:meta {:content (h description) :name "description"}])
                   [:meta {:name "viewport" :content "width=device-width, initial-scale=1"}]
                   (include-css "/css/main.css")
                   ; cannot use include-css since google fonts use | char which is not valid in a Java URI object
                   (for [style (-> ctx :config :style :additional-stylesheets)]
-                    [:link {:type "text/css", :href style, :rel "stylesheet"}])]
+                    [:link {:type "text/css", :href (h style), :rel "stylesheet"}])]
                  [:body {}
                   [:div.container content]
                   (include-js "/js/script.js")]))})

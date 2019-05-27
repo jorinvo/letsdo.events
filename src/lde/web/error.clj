@@ -12,6 +12,6 @@
      :title title}
     [:div
      [:h1 "Let's do events!"]
-     [:h2 title]
+     [:h2 (h title)]
      [:p
-      [:a.btn {:href link} link-text]]]))
+      [:a.btn {:href link} (h link-text)]]]))

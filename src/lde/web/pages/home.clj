@@ -1,5 +1,6 @@
 (ns lde.web.pages.home
   (:require
+    [hiccup.core :refer [h]]
     [lde.web :refer [render]]
     [lde.core.topic :as topic]))
 
@@ -10,7 +11,7 @@
     ctx
     {:title title}
     [:div
-     [:h1 title]
+     [:h1 (h title)]
      [:h2 "All Topics"]
      (if user-id
        [:nav
@@ -24,6 +25,6 @@
                     :topic/slug
                     :topic/description]} (topic/list-all-public ctx)]
         [:li [:a
-              {:href (str "/for/" slug)}
-              [:h3 name]]
-         [:p description]])]]))
+              {:href (str "/for/" (h slug))}
+              [:h3 (h name)]]
+         [:p (h description)]])]]))

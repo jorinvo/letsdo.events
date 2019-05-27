@@ -69,10 +69,10 @@
         [:a.cancel {:href "/"} "Cancel"]]])))
 
 (defn edit [{:keys [topic ctx]}]
-  (let [url (str "/for/" (:topic/slug topic))]
+  (let [url (h (str "/for/" (:topic/slug topic)))]
     (render
       ctx
-      {:title (str "Edit Topic: " (:topic/name topic))}
+      {:title (str "Edit Topic: " (h (:topic/name topic)))}
       [:div
        [:h1
         "Edit Topic"]
@@ -83,18 +83,18 @@
          [:label [:div "Topic name" [:sup " *"]]
           [:input.input-field {:type "text"
                                :name "name"
-                               :value (:topic/name topic)
+                               :value (h (:topic/name topic))
                                :required true}]]]
         [:div.form-field
          [:label [:div "Description"]
           [:input.input-field {:type "text"
                                :name "description"
-                               :value (:topic/description topic)}]]]
+                               :value (h (:topic/description topic))}]]]
         (let [image (image/get-by-hash (:topic/image topic) ctx)]
           [:div.form-field.image-upload
            [:label [:div "Select a logo"]
             [:div [:img#image-upload-preview
-                   {:src image
+                   {:src (h image)
                     :alt "logo"
                     :class (when-not image "hide")}]
              [:span#image-upload-message.btn
@@ -141,25 +141,11 @@
           :data-confirm "Are you sure you want to delete the topic?"}
          "Delete Topic"]]])))
 
-(defn post [{:keys [ctx session parameters]}]
-  (let [topic (-> (:multipart parameters)
-                  (assoc :creator (:id session))
-                  (update :image multipart-image-to-data-uri)
-                  (topic/create ctx))]
-    (response/redirect (str "/for/" (:topic/slug topic)) :see-other)))
-
-(defn post-edit [{:keys [ctx session topic parameters]}]
-  (let [new-topic (-> (:multipart parameters)
-                      (update :image multipart-image-to-data-uri)
-                      (update :delete-image #(= "true" %))
-                      (topic/update (:id topic) ctx))]
-    (response/redirect (str "/for/" (:topic/slug new-topic)) :see-other)))
-
 (defn overview [{:keys [topic ctx session]
                  {{:keys [whats]
                    :or {whats "upcoming"}} :query} :parameters}]
   (let [title (:topic/name topic)
-        topic-url (str "/for/" (:topic/slug topic))
+        topic-url (h (str "/for/" (:topic/slug topic)))
         topic-id (:id topic)
         user-id (:id session)
         events (case whats
@@ -173,17 +159,17 @@
        :description (str title " - " (:topic/description topic))}
       [:div
        [:a {:href topic-url}
-        [:h1 (:topic/name topic)]]
+        [:h1 (h (:topic/name topic))]]
        (when-let [image (image/get-by-hash (:topic/image topic) ctx)]
-         [:img.logo {:src image
+         [:img.logo {:src (h image)
                      :alt "logo"}])
-       [:h2 (:topic/description topic)]
+       [:h2 (h (:topic/description topic))]
        (if user
          [:nav
-          [:a.nav-item {:href (str "/for/" (:topic/slug topic) "/new")}
+          [:a.nav-item {:href (h (str "/for/" (:topic/slug topic) "/new"))}
            "New " (topic/singular topic)]
           (when (topic/admin? ctx (:id topic) (:id user))
-            [:a.nav-item {:href (str "/for/" (:topic/slug topic) "/edit")}
+            [:a.nav-item {:href (h (str "/for/" (:topic/slug topic) "/edit"))}
              "Edit Topic"])
           [:a.nav-item {:href (goto-url "/logout" topic-url)} "Logout"]]
          [:nav
@@ -208,7 +194,3 @@
            (str "My " (topic/plural topic))])]
        [:ul.overview-list (map #(vector :li (event-page/item % topic user ctx))
                                events)]])))
-
-(defn delete [{:keys [ctx topic]}]
-  (topic/delete ctx (:id topic))
-  (response/redirect "/" :see-other))
