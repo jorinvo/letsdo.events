@@ -125,7 +125,9 @@
 [:.logo
  {:max-width "100%"
   :max-height "500px"
-  :margin "1rem 0"}]]))
+  :margin "1rem 0"}]
+[:.past
+ {:opacity "0.5"}]]))
 
 (defn handler [req]
   {:status 200

@@ -184,8 +184,8 @@
     (->> ids
          (map #(crux->id (crux/entity db %))))))
 
-(defn get-by-id [{:keys [::crux]} id]
-  (crux->id (crux/entity (crux/db crux) id)))
+(defn get-by-id [ctx id]
+  (first (list-by-ids ctx [id])))
 
 (defn list-by-ids-with-timestamps [{:keys [::crux]} ids]
   (let [db (crux/db crux)]
@@ -195,33 +195,12 @@
                        :created (-> h last :crux.db/valid-time)
                        :updated (-> h first :crux.db/valid-time)))))))
 
+(defn get-by-id-with-timestamps [ctx id]
+  (first (list-by-ids-with-timestamps ctx [id])))
+
 (defn get-key [{:keys [::crux]} k]
   (let [db (crux/db crux)
         q (crux/q db {:find '[value]
                       :where '[[id :value value]]
                       :args [{'id k}]})]
     (ffirst q)))
-
-(comment
-
-  (.close (::crux ctx))
-
-  (def ctx (init "db"))
-
-  (save ctx {:email "abCd@de.com"})
-  (< 0 (count (find-by-email ctx "hi@jorin.me")))
-
-  (let [db (crux/db (::crux ctx))]
-    (map #(crux/entity db (first %))
-         (crux/q db '{:find [e]
-                      :where [[e :email "abCd@de.com"]]})))
-
-  (save (init "./db") {"email" "abCd@de.com"})
-  (save (init "./db") {:password nil})
-  (->> (jdbc/query db "select * from users") (map :email))
-  (jdbc/query db "show tables")
-  (jdbc/query db "show columns from users")
-  (jdbc/execute! db table-users)
-  (jdbc/execute! db "drop table users")
-
-)

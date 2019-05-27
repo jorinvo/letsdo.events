@@ -144,24 +144,39 @@
   (-> (db/get-by-id ctx id)
       (assoc-attendee-count ctx)))
 
+(defn assoc-ref-date [event]
+  (if-let [ref-date (if-let [ed (:event/end-date event)]
+                      (str ed "T" (or (:event/end-time event)
+                                      "23:59"))
+                      (when-let [sd (:event/start-date event)]
+                        (str sd "T" (or (:event/start-time event)
+                                        "00:00"))))]
+    (assoc event :ref-date ref-date)
+    event))
+
+(defn map-mark-as-past [events]
+  (let [rel (time/minus (time/local-date-time)
+                        (time/days 2))]
+    (map #(if-let [r (:ref-date %)]
+            (assoc %
+                   :past-related-to-what-date rel
+                   :mark-as-past (time/before? (time/local-date-time r) rel))
+            %)
+         events)))
+
 (defn sort-by-upcoming
   "sort order: end date, start date, no date sorted by created, past"
   [events]
-  (let [rel (time/minus (time/local-date-time)
-                        (time/days 2))]
-    (->> events
-         (map #(vector % (if-let [s (if-let [ed (:event/end-date %)]
-                                      (str ed "T" (or (:event/end-time %)
-                                                      "23:59"))
-                                      (when-let [sd (:event/start-date %)]
-                                        (str sd "T" (or (:event/start-time %)
-                                                        "00:00"))))]
-                           (if (time/after? (time/local-date-time s) rel)
-                             (str "a-" s)
-                             (str "c-" s))
-                           (str "b-" (time/instant (:created %))))))
-         (sort-by second)
-         (map first))))
+  (->> events
+       (map assoc-ref-date)
+       map-mark-as-past
+       (map #(vector % (if-let [r (:ref-date %)]
+                         (if (:mark-as-past %)
+                           (str "c-" (time/duration r (:past-related-to-what-date %)))
+                           (str "a-" r))
+                         (str "b-" (time/instant (:created %))))))
+       (sort-by second)
+       (map first)))
 
 (defn upcoming-by-topic [topic-id ctx]
   (->> (db/list-ids-by-attribute ctx :event/topic topic-id)
@@ -186,6 +201,8 @@
 (defn latest-by-topic [topic-id ctx]
   (->> (db/list-ids-by-attribute ctx :event/topic topic-id)
        (db/list-by-ids-with-timestamps ctx)
+       (map assoc-ref-date)
+       map-mark-as-past
        (sort-by :created #(compare %2 %1))
        (map #(assoc-attendee-count % ctx))))
 

@@ -66,7 +66,7 @@
         user-joined (event/joined? ctx (:id event) (:id user))
         user-is-organizer (event/organizer? ctx (:id event) (:id user))
         {:keys [:event/location]} event]
-    [:div
+    [:div {:class (when (:mark-as-past event) "past")}
      [:a {:href event-url}
       [:h3 (h title)]]
      (when-let [image (image/get-by-hash (:event/image event) ctx)]

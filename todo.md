@@ -1,11 +1,10 @@
 # letsdo.events
 
-- Cache js
-- mark past events
 - Share form image form component
 - escape html when rendering
 - catch errors and never show to client
 - nice error/spec messages for dev
+- readme with setup instructions
 - allow editing slug and check for conflicts
 - image resizing
 - crop image size in browser
@@ -17,6 +16,7 @@
   - Remove an organizer
 - JWT expiration
 - use same data for schema and for key selection
+- allow to disable passwords completely
 - put server in ctx
 - allow app to be running at sub-route instead of top level
 - drag&drop image upload
