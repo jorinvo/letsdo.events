@@ -6,7 +6,7 @@
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
-    [lde.web :refer [render escape-with-br multipart-image-to-data-uri image-mime-types goto-url]]
+    [lde.web.util :refer [render escape-with-br multipart-image-to-data-uri image-mime-types goto-url]]
     [lde.web.pages.event :as event-page]
     [lde.core.topic :as topic]
     [lde.core.image :as image]

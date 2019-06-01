@@ -35,8 +35,9 @@
      [:a
       {:text-decoration :none
        :color text-color}
-      [:&:hover
-       {:text-decoration :underline}]]
+      [:&:hover :&:focus
+       {:outline :none
+        :text-decoration :underline}]]
      [:nav
       {:margin-bottom "2rem"}
       [:.nav-item
@@ -56,7 +57,9 @@
        {:cursor "pointer"
         :background primary-color
         :outline :none
-        :color background-color}]]
+        :color background-color}]
+      ["&::-moz-focus-inner"
+       {:border 0}]]
      [:.btn-small
       {:font-size "0.7rem"
        :margin "0.5rem 0"}]

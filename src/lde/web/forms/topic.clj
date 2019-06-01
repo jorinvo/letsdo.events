@@ -1,7 +1,7 @@
 (ns lde.web.forms.topic
   (:require
     [ring.util.response :as response]
-    [lde.web :refer [multipart-image-to-data-uri]]
+    [lde.web.util :refer [multipart-image-to-data-uri]]
     [lde.core.topic :as topic]))
 
 (defn post [{:keys [ctx session parameters]}]

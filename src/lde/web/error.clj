@@ -1,12 +1,13 @@
 (ns lde.web.error
   (:require
-    [lde.web :as web]))
+    [hiccup.core :refer [h]]
+    [lde.web.util :as util]))
 
 (defn render [{:keys [status title link link-text]
                :or {link "/"
                     link-text "Go to homepage"}}
               ctx]
-  (web/render
+  (util/render
     ctx
     {:status status
      :title title}

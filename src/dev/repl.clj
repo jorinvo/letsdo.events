@@ -11,7 +11,7 @@
     [reitit.ring :as ring]
     [java-time :as time]
     [dev.reload :as reload]
-    [lde.web.router :as router]
+    [lde.web :as web]
     [lde.db :as db]
     [lde.core.settings :as settings]
     [lde.core.event :as event]
@@ -27,7 +27,7 @@
 
 (defn make-dev-server []
   (http/start-server (reload/middleware (fn [req]
-                                          ((router/init @ctx) req)))
+                                          ((web/init @ctx) req)))
                      (:config @ctx)))
 
 (defonce server (atom (make-dev-server)))

@@ -3,7 +3,7 @@
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
-    [lde.web :refer [render goto-url]]
+    [lde.web.util :refer [render goto-url]]
     [lde.core.user :as user]))
 
 (defn handler [{:as req :keys [ctx]

@@ -6,7 +6,7 @@
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [hiccup.core :refer [h]]
-    [lde.web :refer [render escape-with-br image-mime-types goto-url]]
+    [lde.web.util :refer [render escape-with-br image-mime-types goto-url]]
     [lde.core.event :as event]
     [lde.core.image :as image]
     [lde.core.topic :as topic]

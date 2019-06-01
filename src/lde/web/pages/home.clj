@@ -1,7 +1,7 @@
 (ns lde.web.pages.home
   (:require
     [hiccup.core :refer [h]]
-    [lde.web :refer [render]]
+    [lde.web.util :refer [render]]
     [lde.core.topic :as topic]))
 
 (defn handler [{{user-id :id} :session
