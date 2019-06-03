@@ -3,6 +3,7 @@
             [clojure.string :as str]
             [buddy.sign.jwt :as jwt]
             [postal.core :as postal]
+            [java-time :as time]
             [lde.auth :as auth]
             [lde.core.settings :as settings]
             [lde.db :as db]))
@@ -39,7 +40,10 @@
   (db/get-by-attribute ctx :user/email email))
 
 (defn get-token-for-email [user-id ctx]
-  (jwt/sign {:user-id user-id} (settings/get-jwt-secret ctx)))
+  (jwt/sign {:user-id user-id
+             :exp (time/plus (time/instant)
+                             (time/days 7))}
+            (settings/get-jwt-secret ctx)))
 
 (defn get-email-login-link [base-url token goto]
   (str base-url

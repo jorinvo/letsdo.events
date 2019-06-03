@@ -4,15 +4,16 @@
 - catch errors and never show to client
 - nice error/spec messages for dev
 - allow editing slug and check for conflicts
-- image resizing
-- crop image size in browser
+- Share form image form component
+  - image resizing
+  - crop image size in browser
 - Refactor links and goto logic in a helper
 - multiple organizers
   - Request joining organizers
   - Accept organizer
   - Stop organizing
   - Remove an organizer
-- JWT expiration
+- readme with setup instructions
 - use same data for schema and for key selection
 - allow to disable passwords completely
 - put server in ctx
