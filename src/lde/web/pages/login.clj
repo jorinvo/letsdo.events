@@ -6,7 +6,9 @@
     [lde.web.util :refer [render goto-url]]
     [lde.core.user :as user]))
 
-(defn handler [{:as req :keys [ctx]
+(defn handler [{:as req
+                {:as ctx
+                 {pw-auth-enabled :enable-password-authentication} :config} :ctx
                 {user-id :id} :session
                 {{:keys [goto]} :query} :parameters}]
   (let [path (-> req get-match match->path)]
@@ -35,13 +37,14 @@
             [:input.input-field {:type "email"
                                  :name "email"
                                  :required true}]]]
-          [:div.form-field
-           [:label
-            [:div "Password"]
-            [:div
-             [:input.input-field {:type "password"
-                                  :name "password"}]]
-            [:small "No need for a password, you get an email instead"]]]
+          (when pw-auth-enabled
+            [:div.form-field
+             [:label
+              [:div "Password"]
+              [:div
+               [:input.input-field {:type "password"
+                                    :name "password"}]]
+              [:small "No need for a password, you get an email instead"]]])
           [:div.form-field.link-field
            [:label
             [:div "Link to your website / social media / ..."]
@@ -51,10 +54,11 @@
            [:button.btn.login-button {:type "submit"} "Login"]
            [:button.btn.signup-button {:type "submit"} "Signup"]]]]))))
 
-(defn post-login [{:keys [ctx]
+(defn post-login [{{:as ctx
+                    {pw-auth-enabled :enable-password-authentication} :config} :ctx
                    {{:keys [email password]} :form
                     {:keys [goto]} :query} :parameters}]
-  (if (empty? password)
+  (if (or (not pw-auth-enabled) (empty? password))
     (do (user/send-login-email ctx email goto)
         (response/redirect "/login/email-confirm" :see-other))
     (if-let [user (user/login ctx email password)]

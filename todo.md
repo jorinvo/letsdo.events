@@ -15,7 +15,6 @@
   - Remove an organizer
 - readme with setup instructions
 - use same data for schema and for key selection
-- allow to disable passwords completely
 - put server in ctx
 - allow app to be running at sub-route instead of top level
 - drag&drop image upload

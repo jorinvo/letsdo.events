@@ -7,6 +7,7 @@
     [clojure.test.check.generators :as gen]))
 
 (s/def ::port (s/int-in 1 65536))
+(s/def ::enable-password-authentication bool?)
 (s/def ::public-base-url (s/and string?
                                 #(try (io/as-url (if (= "/" (last %))
                                                    (subs % 0 (dec (count %)))
@@ -109,10 +110,11 @@
 
 (s/def ::config
   (s/keys :req-un [::port ::public-base-url ::db-dir]
-          :opt-un [::content ::style ::smtp]))
+          :opt-un [::enable-password-authentication ::content ::style ::smtp]))
 
 (def default-config
   {:port 3000
+   :enable-password-authentication true
    :public-base-url "http://localhost:3000"
    :db-dir "./db"
    :content {:system-title "Let's do events!"}
