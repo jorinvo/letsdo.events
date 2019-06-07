@@ -1,9 +1,8 @@
 # letsdo.events
 
-- Share form image form component
+- events instead of metrics and logging: one event with all the context per request
 - catch errors and never show to client
 - nice error/spec messages for dev
-- readme with setup instructions
 - allow editing slug and check for conflicts
 - image resizing
 - crop image size in browser
@@ -75,3 +74,4 @@
 - a11y
 - data generation via API+specs
 - use API specs for generative testing
+- readme with setup instructions

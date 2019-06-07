@@ -6,7 +6,8 @@
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
     [ring.util.response :as response]
-    [lde.web.util :refer [render escape-with-br multipart-image-to-data-uri image-mime-types goto-url]]
+    [lde.web.components :as components]
+    [lde.web.util :refer [render escape-with-br multipart-image-to-data-uri goto-url]]
     [lde.web.pages.event :as event-page]
     [lde.core.topic :as topic]
     [lde.core.image :as image]
@@ -33,16 +34,7 @@
          [:label [:div "Description"]
           [:input.input-field {:type "text"
                                :name "description"}]]]
-        [:div.form-field.image-upload
-         [:label [:div "Select a logo"]
-          [:div [:img#image-upload-preview { :alt "logo"
-                                            :class "hide"}]
-           [:span#image-upload-message.btn "click to select image"]]
-          [:input#image-upload-input {:type "file"
-                                      :name "image"
-                                      :accept (str/join ", " image-mime-types)
-                                      :class "hide"}]]
-         [:span#image-upload-clear.btn {:class "hide"} "remove image"]]
+        (components/image-upload)
         [:input {:type "hidden"
                  :name "visibility"
                  :required true
@@ -91,22 +83,7 @@
                                :name "description"
                                :value (h (:topic/description topic))}]]]
         (let [image (image/get-by-hash (:topic/image topic) ctx)]
-          [:div.form-field.image-upload
-           [:label [:div "Select a logo"]
-            [:div [:img#image-upload-preview
-                   {:src (h image)
-                    :alt "logo"
-                    :class (when-not image "hide")}]
-             [:span#image-upload-message.btn
-              {:class (when image "hide")}
-              "click to select image"]]
-            [:input#image-upload-input {:type "file"
-                                        :name "image"
-                                        :accept (str/join ", " image-mime-types)
-                                        :class "hide"}]]
-           [:input#delete-image-input {:type "hidden"
-                                       :name "delete-image"}]
-           [:span#image-upload-clear.btn {:class (when-not image "hide")} "remove image"]])
+          (components/image-upload image))
         [:br]
         [:input {:type "hidden"
                  :name "visibility"
