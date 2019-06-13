@@ -2,6 +2,11 @@
 
 - events instead of metrics and logging: one event with all the context per request
 - catch errors and never show to client
+  - how to notify me? sentry? honeycomb?
+    https://github.com/conormcd/clj-honeycomb
+    https://github.com/getsentry/sentry-clj
+    https://github.com/sethtrain/raven-clj
+    https://github.com/exoscale/raven
 - nice error/spec messages for dev
 - allow editing slug and check for conflicts
 - Share form image form component

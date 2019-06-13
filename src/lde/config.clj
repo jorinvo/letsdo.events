@@ -7,7 +7,7 @@
     [clojure.test.check.generators :as gen]))
 
 (s/def ::port (s/int-in 1 65536))
-(s/def ::enable-password-authentication bool?)
+(s/def ::enable-password-authentication boolean?)
 (s/def ::public-base-url (s/and string?
                                 #(try (io/as-url (if (= "/" (last %))
                                                    (subs % 0 (dec (count %)))
