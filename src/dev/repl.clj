@@ -2,6 +2,7 @@
   (:require
     [clojure.string :as str]
     [clojure.repl]
+    [clojure.java.io :as io]
     [crux.api :as crux]
     [crux.decorators.aggregation.alpha :as aggr]
     [cider-nrepl.main :as cider]

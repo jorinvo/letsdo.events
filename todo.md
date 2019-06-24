@@ -1,31 +1,50 @@
 # letsdo.events
 
-- events instead of metrics and logging: one event with all the context per request
-- catch errors and never show to client
-  - how to notify me? sentry? honeycomb?
-    https://github.com/conormcd/clj-honeycomb
-    https://github.com/getsentry/sentry-clj
-    https://github.com/sethtrain/raven-clj
-    https://github.com/exoscale/raven
-- nice error/spec messages for dev
-- allow editing slug and check for conflicts
-- Share form image form component
-  - image resizing
-  - crop image size in browser
-- Refactor links and goto logic in a helper
+- how to delete unused images?
+ can only delete if no event and no topic references it
+ who should track cascading references?
+ have a spec for db schema
+ have an image type
+ find by attribute that uses image type
+
+- user settings at /me
+  - delete account
 - multiple organizers
   - Request joining organizers
   - Accept organizer
   - Stop organizing
   - Remove an organizer
-- readme with setup instructions
-- use same data for schema and for key selection
-- put server in ctx
-- allow app to be running at sub-route instead of top level
-- drag&drop image upload
 - CRUD for topic admin
-- user settings at /me
-- delete account
+
+- nice error/spec messages for dev
+- catch errors and never show to client
+
+- limit input char length (against evil input)
+- security headers
+- login delay against brute force
+- protect form forgery: form nonce
+- [prevent redirect attacks](https://rundis.github.io/blog/2015/buddy_auth_part2.html)
+- caching headers
+
+- manifold vs core.async for transaction
+
+- readme with setup instructions
+
+- Refactor links and goto logic in a helper
+  - allow app to be running at sub-route instead of top level
+
+- events instead of metrics and logging: one event with all the context per request
+  - try honeycomb free?
+    https://github.com/conormcd/clj-honeycomb
+    https://github.com/getsentry/sentry-clj
+    https://github.com/sethtrain/raven-clj
+    https://github.com/exoscale/raven
+
+- allow editing slug and check for conflicts
+- image resizing
+- crop image size in browser
+- drag&drop image upload
+
 - notify about new activity (via mail) if subscribed to topic
   - admin subscribes automatically
   - can unsubscribe
@@ -36,24 +55,14 @@
 - List all your subscriptions
 - How to prevent mail and sign up spam?
 - Pagination for event and topic list
-- limit input char length (against evil input)
 - spec for API responses
-- security headers
-- gzip
-- html meta tags
-- cache css
+
 - imprint and cookie warning
-- [cookie settings](https://github.com/ring-clojure/ring/wiki/Cookies)
+
+- stats
 - check for weak password
 - cache pages
-- login delay against brute force
-- protect form forgery: form nonce
-- stats
-- [prevent redirect attacks](https://rundis.github.io/blog/2015/buddy_auth_part2.html)
-- monitoring/error tracking
 - handle display of multiple anonymous organizers
-- how to delete unused images?
-- manifold vs core.async for transaction
 - edit view: image hover
 - empty topic placeholder
 - request joining topic
@@ -65,7 +74,6 @@
 - event interest
 - schedule/commit
 - setup possible dates
-- caching headers
 - Gravatar
 - API keys
 - json export
@@ -79,4 +87,7 @@
 - a11y
 - data generation via API+specs
 - use API specs for generative testing
-- readme with setup instructions
+
+- robots.txt and meta tag
+- cache css rendering
+- meta open graph tags

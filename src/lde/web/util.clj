@@ -12,6 +12,7 @@
    :headers {"content-type" "text/html"}
    :body (html {:mode :html}
                (html5
+                 {:lang "en"}
                  [:head
                   [:title (h title)]
                   [:meta {:charset "utf-8"}]

@@ -2,6 +2,7 @@
   (:require
     [clojure.string :as str]
     [clojure.spec.alpha :as s]
+    [clojure.java.io :as io]
     [reitit.ring :as ring]
     [reitit.coercion.spec :as spec-coercion]
     [reitit.ring.coercion :as ring-coericion]
@@ -26,6 +27,8 @@
     [lde.web.forms.topic :as topic-form]
     [lde.web.forms.event :as event-form])
   (:import [java.util.regex Pattern]))
+
+(def cookie-expiration-in-seconds (* 30 24 60 60))
 
 (defn req-str [s]
   (and (string? s)
@@ -180,7 +183,11 @@
   (let [store (cookie-store {:key (settings/get-cookie-secret ctx)})]
     (fn [handler]
       (wrap-session handler {:store store
-                             :cookie-name "letsdoevents-session"}))))
+                             :cookie-name "letsdoevents-session"
+                             :cookie-attr {:domain (-> ctx :config :public-base-url io/as-url .getHost)
+                                           :secure true
+                                           :max-age cookie-expiration-in-seconds
+                                           :same-site :strict}}))))
 
 (defn init [ctx]
   (ring/ring-handler
