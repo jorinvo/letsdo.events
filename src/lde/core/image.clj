@@ -13,7 +13,7 @@
 (defn new-entity-from-data
   "Generates a new entity from a base64 data string.
   Entity gets hash as id so it can be reused."
-  [data ctx]
+  [data]
   (when-not (nil? data)
     (let [hash-id (-> data hash/sha256 bytes->hex keyword)]
       {:id hash-id

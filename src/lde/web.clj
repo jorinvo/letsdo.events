@@ -1,6 +1,5 @@
 (ns lde.web
   (:require
-    [clojure.string :as str]
     [clojure.spec.alpha :as s]
     [clojure.java.io :as io]
     [reitit.ring :as ring]
@@ -84,9 +83,12 @@
 (s/def ::whats #{"upcoming" "new" "mine"})
 (s/def ::overview-query (s/keys :opt-un [::whats]))
 
+(s/def ::invite-form
+  (s/keys :req-un [:lde.config/email]))
+
 (defn routes []
   [["/css/main.css" {:get css/handler}]
-   ["/js/script.js" {:get (fn [req] (-> (response/resource-response "public/js/script.js")
+   ["/js/script.js" {:get (fn [_] (-> (response/resource-response "public/js/script.js")
                                         (update :body slurp)))}]
    ["/" {:get home/handler}]
    ["/login"
@@ -113,6 +115,10 @@
                                             :type #(contains? topic/types (keyword %))
                                             :visibility #(contains? topic/visibilities (keyword %))
                                             :image ::image}}}}]
+   ["/accept"
+    ["" {:get (constantly (response/redirect "/" :permanent-redirect))}]
+    ["/:topic" {:middleware [middleware/load-topic]
+                :get topic-form/accept-invite}]]
    ["/for"
     ["" {:get (constantly (response/redirect "/" :permanent-redirect))}]
     ["/:topic" {:middleware [middleware/load-topic
@@ -130,6 +136,13 @@
                                                :delete-image string?}}}}]
      ["/delete" {:middleware [middleware/authorize-topic-edit]
                  :post topic-form/delete}]
+     ["/join" {:get topic-form/accept-invite}]
+     ["/invites"
+      ["" {:middleware [middleware/authorize-topic-edit]
+           :get topic-page/list-invites
+           :post {:handler topic-form/post-invite
+                  :parameters {:form ::invite-form}}}]
+      ["/:invite/delete" {:post topic-form/post-delete-invite}]]
      ["/new" {:middleware [middleware/authorize-user]
               :get event-page/new
               :post {:handler event-form/post

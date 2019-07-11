@@ -12,11 +12,12 @@
       (handler req)
       (response/redirect (str "/login?goto=" (:uri req))))))
 
-; TODO For now all topics are still public
 (defn authorize-topic-read [handler]
   (fn [{:as req :keys [topic ctx] {user-id :id} :session}]
-    (if (or user-id
-            (= :public (:topic/visibility topic)))
+    (if (or (= :public (:topic/visibility topic))
+            (topic/is-member? {:user-id user-id
+                               :topic-id (:id topic)}
+                              ctx))
       (handler req)
       (error/render {:status 404
                      :title "Not found"}

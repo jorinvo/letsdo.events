@@ -1,12 +1,12 @@
 (ns lde.core.user
   (:require [clojure.set :refer [rename-keys]]
-            [clojure.string :as str]
             [buddy.sign.jwt :as jwt]
             [postal.core :as postal]
             [java-time :as time]
             [lde.auth :as auth]
             [lde.core.settings :as settings]
-            [lde.db :as db]))
+            [lde.db :as db]
+            [lde.email :as email]))
 
 (def user-key-map {:email :user/email
                    :name :user/name
@@ -78,8 +78,8 @@
          body (render-email login-link
                            (:user/name user)
                            system-title)]
-      (send-email {:to email
-                  :subject (str system-title " Login Link")
-                  :body body}
-                 ctx))))
+      (email/send {:to email
+                   :subject (str system-title " Login Link")
+                   :body body}
+                  ctx))))
 

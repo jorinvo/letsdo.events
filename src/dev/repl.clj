@@ -60,7 +60,7 @@
 
   (db/get-by-email @ctx "hi@jorin.me")
 
-  (user/login {:email "hi@jorin.me" :password "123"} @ctx)
+  (user/login "hi@jorin.me" "123" @ctx)
 
   (settings/get-cookie-secret @ctx)
 

@@ -9,11 +9,10 @@
 
 (def visibilities (array-map
                     :public
-                    {:label "Anyone can see and participate in this topic"}
+                    {:label "Anyone can see and participate"}
                     :invite
-                    {:label "You need to be invited to topic"}
-                    :request
-                    {:label "You can request to join this topic"}))
+                    {:label "You need to be invited"}))
+; :request {:label "You can request to join"}
 
 (def types (array-map
              :activities
@@ -59,7 +58,7 @@
 
 (defn create [data ctx]
   (db/tx ctx
-         (let [image (image/new-entity-from-data (:image data) ctx)
+         (let [image (image/new-entity-from-data (:image data))
                topic (-> data
                          (select-keys (keys topic-keys))
                          (rename-keys topic-keys)
@@ -67,21 +66,25 @@
                          (clojure.core/update :topic/type keyword)
                          (assoc :id (db/id)
                                 :topic/slug (unique-slug (:name data) ctx)
-                                :topic/image (:id image)))]
+                                :topic/image (:id image)))
+               admin {:id (db/id)
+                      :admin/topic (:id topic)
+                      :admin/user (:creator data)}
+               member {:id (db/id)
+                       :member/topic (:id topic)
+                       :member/user (:creator data)}]
            (->> [topic
                  image
-                 {:id (db/id)
-                  :admin/topic (:id topic)
-                  :admin/user (:creator data)}]
+                 admin
+                 member]
                 (db/save-multi! ctx)
                 first))))
 
 (defn update [data topic-id ctx]
   (db/tx ctx
          (when-let [existing-topic (db/get-by-id ctx topic-id)]
-           (let [image (image/new-entity-from-data (:image data) ctx)
+           (let [image (image/new-entity-from-data (:image data))
                  delete-image (:delete-image data)
-                 previous-image-id (:topic/image existing-topic)
                  new-topic (-> existing-topic
                                (merge (-> data
                                           (select-keys (keys updatable-topic-keys))
@@ -121,3 +124,7 @@
               (concat (list-attached-ids ctx topic-id))
               (concat (event/list-attached-ids-by-topic ctx topic-id))
               (db/delete-by-ids! ctx))))
+
+(defn is-member? [{:keys [user-id topic-id]} ctx]
+  (db/exists-by-attributes ctx {:member/user user-id
+                                :member/topic topic-id}))

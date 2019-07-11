@@ -65,10 +65,10 @@
                           (every? (partial s/valid? hostpart-spec) parts)))))
             (gen []
               (let [min-needed 2
-                    max-needed 4]
-                (let [parts-gen (gen/vector (s/gen hostpart-spec)
-                                            min-needed max-needed)]
-                  (gen/fmap (partial str/join ".") parts-gen))))]
+                    max-needed 4
+                    parts-gen (gen/vector (s/gen hostpart-spec)
+                                          min-needed max-needed)]
+                (gen/fmap (partial str/join ".") parts-gen)))]
       (s/spec pred :gen gen))))
 
 (s/def ::local-email-part

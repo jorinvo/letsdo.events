@@ -1,18 +1,17 @@
 (ns lde.web.pages.topic
   (:refer-clojure :exclude [new])
   (:require
-    [clojure.string :as str]
     [hiccup.core :refer [h]]
     [reitit.core :refer [match->path]]
     [reitit.ring :refer [get-match]]
-    [ring.util.response :as response]
     [lde.web.components :as components]
     [lde.web.util :refer [render escape-with-br multipart-image-to-data-uri goto-url]]
     [lde.web.pages.event :as event-page]
     [lde.core.topic :as topic]
     [lde.core.image :as image]
     [lde.core.user :as user]
-    [lde.core.event :as event]))
+    [lde.core.event :as event]
+    [lde.core.invite :as invite]))
 
 (defn new [req]
   (let [path (-> req get-match match->path)]
@@ -35,19 +34,15 @@
           [:input.input-field {:type "text"
                                :name "description"}]]]
         (components/image-upload)
-        [:input {:type "hidden"
-                 :name "visibility"
-                 :required true
-                 :value "public"}]
-        (comment ->> topic/visibilities
-             (map (fn [[value {:keys [label]}]]
-                    [:label
-                     [:input {:type "radio"
-                              :name "visibility"
-                              :required true
-                              :value value}]
-                     label
-                     [:br]])))
+        [:div.form-field
+         [:div "Who can see this topic?" [:sup " *"]]
+         (for [[value {:keys [label]}] topic/visibilities]
+           [:label.radio
+            [:input {:type "radio"
+                     :name "visibility"
+                     :required true
+                     :value value}]
+            label])]
         [:div.form-field
          [:div "This topic is about" [:sup " *"]]
          (for [[value {label :plural}] topic/types]
@@ -84,21 +79,15 @@
                                :value (h (:topic/description topic))}]]]
         (let [image (image/get-by-hash (:topic/image topic) ctx)]
           (components/image-upload image))
-        [:br]
-        [:input {:type "hidden"
-                 :name "visibility"
-                 :required true
-                 :value "public"}]
-        (comment ->> topic/visibilities
-             (map (fn [[value {:keys [label]}]]
-                    [:label
-                     [:input {:type "radio"
-                              :name "visibility"
-                              :required true
-                              :checked (= value (:topic/visibility topic))
-                              :value value}]
-                     label
-                     [:br]])))
+        [:span {} "Who can see this topic? "]
+        (for [[value {:keys [label]}] topic/visibilities]
+          [:label.radio
+           [:input {:type "radio"
+                    :name "visibility"
+                    :required true
+                    :checked (= value (:topic/visibility topic))
+                    :value value}]
+                     label])
         [:span {} "This topic is about: "]
         (for [[value {label :plural}] topic/types]
           [:label.radio
@@ -148,6 +137,9 @@
           (when (topic/admin? ctx (:id topic) (:id user))
             [:a.nav-item {:href (h (str "/for/" (:topic/slug topic) "/edit"))}
              "Edit Topic"])
+          (when (topic/admin? ctx (:id topic) (:id user))
+            [:a.nav-item {:href (h (str "/for/" (:topic/slug topic) "/invites"))}
+             "Manage Invites"])
           [:a.nav-item {:href (goto-url "/logout" topic-url)} "Logout"]]
          [:nav
           [:a.nav-item {:href (goto-url "/login" topic-url)} "Login"]
@@ -171,3 +163,40 @@
            (str "My " (topic/plural topic))])]
        [:ul.overview-list (map #(vector :li (event-page/item % topic user ctx))
                                events)]])))
+
+(defn list-invites [{:keys [topic ctx]}]
+  (let [title (str "Invites - " (:topic/name topic))
+        topic-url (h (str "/for/" (:topic/slug topic)))
+        topic-id (:id topic)
+        invites (invite/list-by-topic topic-id ctx)]
+    (render
+      ctx
+      {:title title}
+      [:div
+       [:a {:href topic-url}
+        [:h1 (h (:topic/name topic))]]
+       (when-let [image (image/get-by-hash (:topic/image topic) ctx)]
+         [:img.logo {:src (h image)
+                     :alt "logo"}])
+       [:h2 "Invites"]
+       [:nav
+          [:a.nav-item {:href (h (str "/for/" (:topic/slug topic)))}
+           "All " (topic/plural topic)]
+          [:a.nav-item {:href (goto-url "/logout" topic-url)} "Logout"]]
+       [:form {:action (str topic-url "/invites") :method "post"}
+        [:div.form-field
+         [:label
+          [:div "Email" [:sup " *"]]
+          [:input.input-field {:type "email"
+                               :name "email"
+                               :required true}]]]
+        [:button.btn
+         {:type "submit"}
+         "Invite"]]
+       [:ul (for [invite invites]
+              [:li
+               (:invite/email invite)
+               [:form.inline {:action (str topic-url "/invites/" (:id invite) "/delete") :method "post"}
+                [:button.btn.btn-small
+                 {:type "submit"}
+                 "Revoke"]]])]])))

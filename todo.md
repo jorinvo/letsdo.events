@@ -1,5 +1,17 @@
 # letsdo.events
 
+- add event interest
+- remove event interest
+- sort by event interest
+
+- notify about new activity (via mail) if subscribed to topic
+  - admin subscribes automatically
+  - can unsubscribe
+- notify about updated to activity (via mail) if subscribed
+  - joining or interest subscribe automatically
+  - can unsubscribe
+- List all your subscriptions
+
 - how to delete unused images?
  can only delete if no event and no topic references it
  who should track cascading references?
@@ -19,8 +31,10 @@
 - nice error/spec messages for dev
 - catch errors and never show to client
 
+- find clear way to represent DB schema
+
 - limit input char length (against evil input)
-- security headers
+- [security headers](https://github.com/ring-clojure/ring-defaults/blob/master/src/ring/middleware/defaults.clj) and [score](https://observatory.mozilla.org/analyze/letsdo.events)
 - login delay against brute force
 - protect form forgery: form nonce
 - [prevent redirect attacks](https://rundis.github.io/blog/2015/buddy_auth_part2.html)
@@ -45,14 +59,9 @@
 - crop image size in browser
 - drag&drop image upload
 
-- notify about new activity (via mail) if subscribed to topic
-  - admin subscribes automatically
-  - can unsubscribe
-- notify about updated to activity (via mail) if subscribed
-  - joining or interest subscribe automatically
-  - can unsubscribe
+- Leaving a topic
+
 - calendar integration
-- List all your subscriptions
 - How to prevent mail and sign up spam?
 - Pagination for event and topic list
 - spec for API responses
@@ -66,13 +75,7 @@
 - edit view: image hover
 - empty topic placeholder
 - request joining topic
-- anyone can join/invite only
-- invite
-- cancel invite
 - favicon
-- suggest activity/talk/thing
-- event interest
-- schedule/commit
 - setup possible dates
 - Gravatar
 - API keys
