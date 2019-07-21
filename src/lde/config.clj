@@ -111,9 +111,14 @@
 (s/def ::smtp
   (s/keys :opt-un [::default]))
 
+(s/def :honeycomb/data-set string?)
+(s/def :honeycomb/write-key string?)
+(s/def ::honeycomb
+  (s/keys :req-un [:honeycomb/data-set :honeycomb/write-key]))
+
 (s/def ::config
   (s/keys :req-un [::port ::public-base-url ::db-dir ::event-log-dir]
-          :opt-un [::enable-password-authentication ::content ::style ::smtp]))
+          :opt-un [::enable-password-authentication ::content ::style ::smtp ::honeycomb]))
 
 (def default-config
   {:port 3000

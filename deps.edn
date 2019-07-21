@@ -14,6 +14,8 @@
         juxt/crux-rocksdb {:mvn/version "19.07-1.3.0-alpha"} ; Database
         juxt/crux-decorators {:mvn/version "19.07-1.3.0-alpha"} ; Database
         org.rocksdb/rocksdbjni {:mvn/version "5.17.2"} ; Key-Value store used as Crux storage
+        conormcd/clj-honeycomb {:mvn/version "1.0.6.536"} ; Observability
+        org.clojure/data.json {:mvn/version "0.2.6"} ; required by honeycomb ring wrapper
         com.draines/postal {:mvn/version "2.0.3"} ; Sending email
         spootnik/signal {:mvn/version "0.2.1"}} ; Handling system signal
  :paths ["src" "resources"]

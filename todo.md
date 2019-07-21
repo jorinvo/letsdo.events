@@ -1,9 +1,8 @@
 # letsdo.events
 
-- nice error/spec messages for dev
-
-- Refactor links and goto logic in a helper
-  - allow app to be running at sub-route instead of top level
+honeycomb
+  - instrument more than ring
+  - try something in UI
 
 - readme with setup instructions
 
@@ -14,13 +13,6 @@
   - joining or interest subscribe automatically
   - can unsubscribe
 - List all your subscriptions
-
-- events instead of metrics and logging: one event with all the context per request
-  - try honeycomb free?
-    https://github.com/conormcd/clj-honeycomb
-    https://github.com/getsentry/sentry-clj
-    https://github.com/sethtrain/raven-clj
-    https://github.com/exoscale/raven
 
 - calendar integration
 
@@ -50,6 +42,9 @@
   - Remove an organizer
 
 - CRUD for topic admin
+
+- Refactor links and goto logic in a helper
+  - allow app to be running at sub-route instead of top level
 
 - find clear way to represent DB schema
 

@@ -5,7 +5,8 @@
     [signal.handler :as signal]
     [lde.web :as web]
     [lde.db :as db]
-    [lde.config :refer [get-config]]))
+    [lde.config :refer [get-config]]
+    [clj-honeycomb.core :as honeycomb]))
 
 (defn -main [& args]
   (when (> (count args) 1)
@@ -25,5 +26,8 @@
                  (db/close ctx)
                  (println "bye")
                  (System/exit 0))]
+      (println "init honeycomb")
+      (honeycomb/init (:honeycomb config))
       (signal/with-handler :term (stop))
-      (signal/with-handler :int (stop)))))
+      (signal/with-handler :int (stop))
+      (println "ready"))))

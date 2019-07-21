@@ -24,7 +24,8 @@
     [lde.web.pages.home :as home]
     [lde.web.pages.login :as login]
     [lde.web.forms.topic :as topic-form]
-    [lde.web.forms.event :as event-form])
+    [lde.web.forms.event :as event-form]
+    [clj-honeycomb.middleware.ring :refer [with-honeycomb-event]])
   (:import [java.util.regex Pattern]))
 
 (def cookie-expiration-in-seconds (* 30 24 60 60))
@@ -219,7 +220,8 @@
                                     :method-not-allowed (constantly (error/render {:status 403
                                                                                    :title "403 - Method not allowed"}
                                                                                   ctx))}))
-    {:middleware [parameters-middleware
+    {:middleware [(when (-> ctx :config :honeycomb) with-honeycomb-event)
+                  parameters-middleware
                   wrap-keyword-params
                   (make-session-middleware ctx)
                   (make-context-middleware ctx)]}))
