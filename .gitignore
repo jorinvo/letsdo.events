@@ -1,6 +1,6 @@
 .cpcache/
 .nrepl-port
 
-db
+data
 target
 config.dev.edn

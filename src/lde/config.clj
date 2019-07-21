@@ -16,6 +16,9 @@
 (s/def ::db-dir #(and (string? %)
                       (when (.exists (.getParentFile (io/file %)))
                         %)))
+(s/def ::event-log-dir #(and (string? %)
+                      (when (.exists (.getParentFile (io/file %)))
+                        %)))
 (s/def ::system-title string?)
 (s/def ::content (s/keys :req-un [::system-title]))
 (s/def ::background-color string?)
@@ -109,14 +112,15 @@
   (s/keys :opt-un [::default]))
 
 (s/def ::config
-  (s/keys :req-un [::port ::public-base-url ::db-dir]
+  (s/keys :req-un [::port ::public-base-url ::db-dir ::event-log-dir]
           :opt-un [::enable-password-authentication ::content ::style ::smtp]))
 
 (def default-config
   {:port 3000
    :enable-password-authentication true
    :public-base-url "http://localhost:3000"
-   :db-dir "./db"
+   :db-dir "./data/db"
+   :event-log-dir "./data/event-log"
    :content {:system-title "Let's do events!"}
    :style {:background-color "#ffffff"
            :primary-color "#ff009a"

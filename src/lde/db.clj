@@ -14,9 +14,10 @@
     (async/pipe release aquire)
     (async/>!! release :ok)
     (-> ctx
-        (assoc ::crux (crux/start-standalone-system
+        (assoc ::crux (crux/start-standalone-node
                         {:kv-backend "crux.kv.rocksdb.RocksKv"
-                         :db-dir (-> ctx :config :db-dir)})
+                         :db-dir (-> ctx :config :db-dir)
+                         :event-log-dir (-> ctx :config :event-log-dir)})
                ::aquire aquire
                ::release release
                ::transaction (atom nil)))))
@@ -72,7 +73,7 @@
   [ctx entitiy-list]
   (->> entitiy-list
        (filterv some?)
-       (mapv #(vector :crux.tx/put (:id %) (id->crux %)))
+       (mapv #(vector :crux.tx/put (id->crux %)))
        (submit! ctx))
   entitiy-list)
 
@@ -84,14 +85,13 @@
 
 (defn update! [new-entity previous-entity ctx]
   (->> [[:crux.tx/cas
-         (:id new-entity)
          (id->crux previous-entity)
          (id->crux new-entity)]]
        (submit! ctx))
   new-entity)
 
 (defn set-key! [ctx k v]
-  (submit! ctx [[:crux.tx/put k {:crux.db/id k :value v}]]))
+  (submit! ctx [[:crux.tx/put {:crux.db/id k :value v}]]))
 
 (defn delete-by-ids! [ctx ids]
   (->> ids
