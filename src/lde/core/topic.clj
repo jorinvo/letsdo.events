@@ -2,7 +2,7 @@
   (:refer-clojure :exclude [update])
   (:require
     [clojure.set :refer [rename-keys]]
-    [lde.db :as db]
+    [lde.core.db :as db]
     [lde.core.util :as util]
     [lde.core.image :as image]
     [lde.core.event :as event]))

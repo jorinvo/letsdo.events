@@ -1,4 +1,4 @@
-(ns lde.email
+(ns lde.core.email
 (:refer-clojure :exclude [send])
   (:require
     [postal.core :as postal]))

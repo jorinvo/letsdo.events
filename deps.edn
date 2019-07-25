@@ -22,5 +22,5 @@
  :aliases {:dev {:extra-deps {cider/cider-nrepl {:mvn/version "0.21.1"}}
                  :main-opts ["-m" "dev.repl"]}
            ; run uberjar like this: `java -cp target/lde.jar clojure.main -m lde.main`
-           :uberjar {:extra-deps {uberdeps {:mvn/version "0.1.1"}}
+           :uberjar {:extra-deps {uberdeps {:mvn/version "0.1.4"}}
                      :main-opts ["-m" "uberdeps.uberjar" "--target" "target/lde.jar"]}}}

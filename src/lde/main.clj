@@ -4,7 +4,7 @@
     [aleph.http :as http]
     [signal.handler :as signal]
     [lde.web :as web]
-    [lde.db :as db]
+    [lde.core.db :as db]
     [lde.config :refer [get-config]]
     [clj-honeycomb.core :as honeycomb]))
 

@@ -13,7 +13,7 @@
     [java-time :as time]
     [dev.reload :as reload]
     [lde.web :as web]
-    [lde.db :as db]
+    [lde.core.db :as db]
     [lde.core.settings :as settings]
     [lde.core.event :as event]
     [lde.core.user :as user]
@@ -58,10 +58,6 @@
 
   (do (in-ns 'dev.reload) (reload-browser))
 
-  (db/get-by-email @ctx "hi@jorin.me")
-
-  (user/login "hi@jorin.me" "123" @ctx)
-
   (settings/get-cookie-secret @ctx)
 
   (-> @(http/get (str "http://localhost:" (:port config) "/login"))
@@ -82,7 +78,7 @@
 
   (db/get-by-attribute @ctx :topic/slug "hi")
 
-  (crux/q (crux/db (:lde.db/crux @ctx))
+  (crux/q (crux/db (:lde.core.db/crux @ctx))
           {:find '[n un]
            :where '[[e :event/topic t]
                     [e :event/name n]
@@ -91,7 +87,7 @@
                     [u :user/name un]]
            :args [{'t #uuid "a249f31c-b644-43c1-8fa9-15d9fddb8935"}]})
 
-  (aggr/q (crux/db (:lde.db/crux @ctx))
+  (aggr/q (crux/db (:lde.core.db/crux @ctx))
           {:find [?id]
            :where '[[topic-id :topic/slug topic-slug]
                     [?id :event/topic topic-id]
@@ -101,19 +97,19 @@
 
   (db/count-by-attribute @ctx :attendee/event #uuid "e1d83332-d2f2-41db-9783-34c0c311d53")
 
-  (aggr/q (crux/db (:lde.db/crux @ctx))
+  (aggr/q (crux/db (:lde.core.db/crux @ctx))
           {:aggr '{:partition-by []
                    :select {?count [0 (inc acc) ?attendee]}}
            :where [['?attendee :attendee/event #uuid "e1d83332-d2f2-41db-9783-34c0c311d53b"]]})
 
-  (aggr/q (crux/db (:lde.db/crux @ctx))
+  (aggr/q (crux/db (:lde.core.db/crux @ctx))
           {:aggr '{:partition-by [?id]
                    :select {?attendee-count [0 (inc acc) ?attendee]}}
            :where '[[?id :event/slug ?slug]
                     [?attendee :attendee/event ?id]]
            :args [{'?slug "hi"}]})
 
-  (aggr/q (crux/db (:lde.db/crux @ctx))
+  (aggr/q (crux/db (:lde.core.db/crux @ctx))
           {:aggr '{:partition-by [?id ?t]
                    :select {?attendee-count [0 (inc acc) ?attendee]}}
            :where '[[?id :event/slug ?slug]
@@ -122,36 +118,14 @@
                     [?x :topic/name ?t]]
            :args [{'?slug "hi"}]})
 
-  (aggr/q (crux/db (:lde.db/crux @ctx))
+  (aggr/q (crux/db (:lde.core.db/crux @ctx))
           '{:aggr {:partition-by [?tn]
                    :select {?ec [0 (inc acc) ?e]}}
             :where [[?t :topic/name ?tn]
                     [?e :event/topic ?t]]})
 
-  (crux/q (crux/db (:lde.db/crux @ctx))
-          {:find ['?id]
-           :where '[[topic-id :topic/slug topic-slug]
-                    [?id :event/topic topic-id]
-                    [?id :event/slug event-slug]]
-           :args {'event-slug "a-is-fun-2"
-                  'topic-slug "ho-2"}})
-
-  (user/create {:email "ho@jorin.me"} @ctx)
-
-  (user/login-with-token @ctx
-                         (user/get-token-for-email @ctx "hi@jorin.me"))
-
   (settings/get-jwt-secret @ctx)
 
-
-  (event/get-organizer-names-by-event-id
-    @ctx
-    (event/get-id-from-slugs @ctx {:topic "heart-of-clojure-2019"
-                                   :event "testing-jam"}))
-
-
-
-(event/list-attached-ids-by-topic @ctx (:id (topic/get-by-slug "heart-of-clojure-2019" @ctx)))
 
 (db/exists-by-id? @ctx :settings/cookie-secret)
 

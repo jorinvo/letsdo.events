@@ -2,7 +2,7 @@
   (:require
     [buddy.core.hash :as hash]
     [buddy.core.codecs :refer [bytes->hex]]
-    [lde.db :as db]))
+    [lde.core.db :as db]))
 
 (defn get-by-hash [hash-id ctx]
   (:image/data (db/get-by-id ctx hash-id)))

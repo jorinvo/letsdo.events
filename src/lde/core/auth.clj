@@ -1,4 +1,4 @@
-(ns lde.auth
+(ns lde.core.auth
   (:refer-clojure :exclude [hash])
   (:require [buddy.hashers :as hashers]))
 

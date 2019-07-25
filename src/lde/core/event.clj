@@ -7,7 +7,7 @@
     [java-time :as time]
     [lde.core.util :as util]
     [lde.core.image :as image]
-    [lde.db :as db]))
+    [lde.core.db :as db]))
 
 (def intentions (array-map
                   :organizer

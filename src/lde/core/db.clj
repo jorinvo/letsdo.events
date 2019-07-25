@@ -1,4 +1,4 @@
-(ns lde.db
+(ns lde.core.db
   (:require [clojure.set :refer [rename-keys]]
             [clojure.core.async :as async]
             [crux.api :as crux]
@@ -8,7 +8,10 @@
 
 (defn id [] (UUID/randomUUID))
 
-(defn init [ctx]
+(defn init
+  "Initializes the DB.
+  Adds DB state to given ctx."
+  [{:as ctx {:keys [db-dir event-log-dir]} :config}]
   (let [aquire (async/chan)
         release (async/chan)]
     (async/pipe release aquire)
@@ -16,8 +19,8 @@
     (-> ctx
         (assoc ::crux (crux/start-standalone-node
                         {:kv-backend "crux.kv.rocksdb.RocksKv"
-                         :db-dir (-> ctx :config :db-dir)
-                         :event-log-dir (-> ctx :config :event-log-dir)})
+                         :db-dir db-dir
+                         :event-log-dir event-log-dir})
                ::aquire aquire
                ::release release
                ::transaction (atom nil)))))
@@ -33,13 +36,24 @@
 (defn- crux->id [x] (rename-keys x {:crux.db/id :id}))
 (defn- id->crux [x] (rename-keys x {:id :crux.db/id}))
 
-(comment
-  (def ctx (init "dbdb"))
-  (close ctx)
-  (tx ctx (str "a" "b"))
-)
+(defmacro tx
+  "Execute body as DB transaction.
+  All DB write need to be wrappen with tx.
+  Only one tx can run at a time.
+  Having a single transactor for DB writes allows you to specify
+  all kinds of constraints of your DB writes as simple queries within a transaction.
 
-(defmacro tx [ctx & body]
+  Example:
+
+  ```
+  (let [ctx (init {:config config})]
+    (tx ctx (if (exists-by-attribute :user/email mail)
+              :email-taken
+              (create! {:user/email mail} ctx)))
+    (close ctx))
+  ```
+  "
+  [ctx & body]
   (let [result (gensym 'result)
         txs (gensym 'txs)
         chan-response (gensym 'chan-response)]

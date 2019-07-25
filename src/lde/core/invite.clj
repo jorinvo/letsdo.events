@@ -2,8 +2,8 @@
   (:refer-clojure :exclude [send])
   (:require
   [clojure.set :refer [rename-keys]]
-    [lde.db :as db]
-    [lde.email :as email]
+    [lde.core.db :as db]
+    [lde.core.email :as email]
     [lde.core.user :as user]
     [lde.core.topic :as topic]))
 

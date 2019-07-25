@@ -3,10 +3,10 @@
             [buddy.sign.jwt :as jwt]
             [postal.core :as postal]
             [java-time :as time]
-            [lde.auth :as auth]
+            [lde.core.auth :as auth]
             [lde.core.settings :as settings]
-            [lde.db :as db]
-            [lde.email :as email]))
+            [lde.core.db :as db]
+            [lde.core.email :as email]))
 
 (def user-key-map {:email :user/email
                    :name :user/name

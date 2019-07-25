@@ -2,7 +2,7 @@
   (:require [buddy.core.codecs :refer [bytes->str bytes->hex str->bytes]]
             [buddy.core.codecs.base64 :as base64]
             [buddy.core.nonce :as nonce]
-            [lde.db :as db]))
+            [lde.core.db :as db]))
 
 (defn get-cookie-secret [ctx]
   (db/tx ctx
