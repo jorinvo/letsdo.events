@@ -5,7 +5,7 @@ echo "--> build"
 clojure -Auberjar
 
 echo "--> deploy"
-scp target/lde.jar letsdo.events:/tmp
+scp target/lde.jar letsdo.events:/tmp/lde_next.jar
 
-echo "--> copy jar and restart"
-ssh -tt letsdo.events 'sudo sh -c "cp /tmp/lde.jar /opt/jars/lde.jar && chown lde:lde /opt/jars/lde.jar && systemctl restart lde"'
+echo "--> restart"
+ssh -tt letsdo.events 'sudo sh -c "chown lde:lde /tmp/lde_next.jar && systemctl stop lde && mv /opt/jars/lde.jar /tmp/lde_previous.jar && mv /tmp/lde_next.jar /opt/jars/lde.jar && systemctl start lde"'

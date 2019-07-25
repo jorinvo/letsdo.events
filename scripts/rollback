@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+
+ssh -tt letsdo.events 'sudo sh -c "systemctl stop lde && mv /opt/jars/lde.jar /tmp/lde_rollback.jar && mv /tmp/lde_previous.jar /opt/jars/lde.jar && systemctl start lde"'
+
