@@ -26,8 +26,9 @@
                  (db/close ctx)
                  (println "bye")
                  (System/exit 0))]
-      (println "init honeycomb")
-      (honeycomb/init (:honeycomb config))
+      (when (:honeycomb config)
+        (println "init honeycomb")
+        (honeycomb/init (:honeycomb config)))
       (signal/with-handler :term (stop))
       (signal/with-handler :int (stop))
       (println "ready"))))

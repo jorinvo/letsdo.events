@@ -1,11 +1,5 @@
 # letsdo.events
 
-honeycomb
-  - instrument more than ring
-  - try something in UI
-
-- readme with setup instructions
-
 - notify about new activity (via mail) if subscribed to topic
   - admin subscribes automatically
   - can unsubscribe
@@ -25,6 +19,11 @@ honeycomb
 - remove event interest
 - sort by event interest
 
+honeycomb
+  - instrument more than ring
+  - boards in UI
+  - observability layer in core to have a generic way to track calls/results (maybe)
+
 - how to delete unused images?
   can only delete if no event and no topic references it
   who should track cascading references?
@@ -40,6 +39,10 @@ honeycomb
   - Accept organizer
   - Stop organizing
   - Remove an organizer
+
+- setup logging
+  - use something else than println
+  - configure SLF4J
 
 - CRUD for topic admin
 
