@@ -65,6 +65,9 @@
                              :event/end-date
                              :event/end-time]))
 
+(comment
+  (s/exercise ::event))
+
 (defn- unique-slug [event-name ctx]
   (let [base (util/slug event-name)]
     (if (db/exists-by-attribute ctx :event/slug base)

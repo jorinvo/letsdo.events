@@ -1,5 +1,7 @@
 (ns dev.repl
   (:require
+    [clojure.spec.test.alpha :as stest]
+    [clojure.spec.alpha :as s]
     [clojure.string :as str]
     [clojure.repl]
     [clojure.java.io :as io]
@@ -50,7 +52,9 @@
 
 (comment
 
-  (start)
+  (stest/instrument)
+  (stest/unstrument)
+
   (stop)
   (reset)
 
@@ -124,9 +128,35 @@
             :where [[?t :topic/name ?tn]
                     [?e :event/topic ?t]]})
 
+  ; All data in db
+  (->> (crux/q (crux/db (:lde.core.db/crux @ctx))
+               {:find '[id]
+                :where '[[id :crux.db/id _]]})
+       (map first)
+       (map #(crux/entity (crux/db (:lde.core.db/crux @ctx)) %)))
+
+  ; All attributes in db
+  (->> (crux/q (crux/db (:lde.core.db/crux @ctx))
+               {:find '[id]
+                :where '[[id :crux.db/id _]]})
+       (map first)
+       (map #(crux/entity (crux/db (:lde.core.db/crux @ctx)) %))
+       (mapcat keys)
+       set
+       sort)
+
+  ; All attribute-type combinations in db
+  (->> (crux/q (crux/db (:lde.core.db/crux @ctx))
+               {:find '[id]
+                :where '[[id :crux.db/id _]]})
+       (map first)
+       (map #(crux/entity (crux/db (:lde.core.db/crux @ctx)) %))
+       (mapcat (fn [e] (map (fn [[k v]] [k (type v)]) e)))
+       set
+       (sort-by first))
+
   (settings/get-jwt-secret @ctx)
 
-
-(db/exists-by-id? @ctx :settings/cookie-secret)
+  (db/exists-by-id? @ctx :settings/cookie-secret)
 
 )

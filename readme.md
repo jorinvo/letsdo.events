@@ -50,7 +50,7 @@ Start the application with `java -cp target/lde.jar clojure.main -m lde.main`
 
 ## Configuration
 
-No configuration is needed but most likely you like to make some adjustments.
+No configuration is required but most likely you like to make some adjustments.
 To overwrite defaults you can pass the path to a EDN file as first argument when running `lde.main`.
 For available options please have a look at the [config namespace](./src/lde/config.clj).
 

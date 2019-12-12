@@ -17,10 +17,12 @@
                       (when (.exists (.getParentFile (io/file %)))
                         %)))
 (s/def ::event-log-dir #(and (string? %)
-                      (when (.exists (.getParentFile (io/file %)))
-                        %)))
+                             (when (.exists (.getParentFile (io/file %)))
+                               %)))
+
 (s/def ::system-title string?)
 (s/def ::content (s/keys :req-un [::system-title]))
+
 (s/def ::background-color string?)
 (s/def ::primary-color string?)
 (s/def ::text-color string?)
@@ -101,24 +103,36 @@
                         hostname-part (s/gen ::host)]
                 (gen/return (str local-part "@" hostname-part))))))
 
-(s/def ::user string?)
-(s/def ::pass string?)
-(s/def ::ssl boolean?)
-(s/def ::from ::email)
-(s/def ::default
-  (s/keys :req-un [::from]
-          :opt-un [::host ::user ::pass ::port ::ssl]))
+(s/def :smtp/from ::email)
+(s/def :smtp/user string?)
+(s/def :smtp/pass string?)
+(s/def :smtp/ssl boolean?)
+(s/def :smtp/default
+  (s/keys :req-un [:smtp/from]
+          :opt-un [:smtp/host
+                   :smtp/user
+                   :smtp/pass
+                   ::port
+                   :smtp/ssl]))
 (s/def ::smtp
-  (s/keys :opt-un [::default]))
+  (s/keys :opt-un [:smtp/default]))
 
 (s/def :honeycomb/data-set string?)
 (s/def :honeycomb/write-key string?)
 (s/def ::honeycomb
-  (s/keys :req-un [:honeycomb/data-set :honeycomb/write-key]))
+  (s/keys :req-un [:honeycomb/data-set
+                   :honeycomb/write-key]))
 
 (s/def ::config
-  (s/keys :req-un [::port ::public-base-url ::db-dir ::event-log-dir]
-          :opt-un [::enable-password-authentication ::content ::style ::smtp ::honeycomb]))
+  (s/keys :req-un [::port
+                   ::public-base-url
+                   ::db-dir
+                   ::event-log-dir]
+          :opt-un [::enable-password-authentication
+                   ::content
+                   ::style
+                   ::smtp
+                   ::honeycomb]))
 
 (def default-config
   {:port 3000
