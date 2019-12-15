@@ -66,7 +66,8 @@
                ~txs (->> @(::transaction ~ctx)
                          (filterv some?))]
            (when-not (empty? ~txs)
-             (crux/submit-tx (::crux ~ctx) ~txs))
+             (let [tx# (crux/submit-tx (::crux ~ctx) ~txs)]
+               (crux/sync (::crux ~ctx) (:crux.tx/tx-time tx#) nil)))
            (reset! (::transaction ~ctx) nil)
            ~result)
          (finally (async/>!! (::release ~ctx) :ok))))))
