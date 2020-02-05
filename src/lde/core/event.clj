@@ -149,12 +149,10 @@
 
 (defn assoc-ref-date [event]
   (if-let [ref-date (if-let [ed (:event/end-date event)]
-                      (str ed "T" (or (:event/end-time event)
-                                      "23:59"))
+                      (str ed "T" (or (:event/end-time event) "23:59"))
                       (when-let [sd (:event/start-date event)]
-                        (str sd "T" (or (:event/start-time event)
-                                        "00:00"))))]
-    (assoc event :ref-date ref-date)
+                        (str sd "T" (or (:event/start-time event) "00:00"))))]
+    (assoc event :ref-date (time/local-date-time ref-date))
     event))
 
 (defn map-mark-as-past [events]
@@ -163,7 +161,7 @@
     (map #(if-let [r (:ref-date %)]
             (assoc %
                    :past-related-to-what-date rel
-                   :mark-as-past (time/before? (time/local-date-time r) rel))
+                   :mark-as-past (time/before? r rel))
             %)
          events)))
 
