@@ -8,7 +8,7 @@ Company-internal tech talks, regular meetups, activities around a conference - w
 
 ## Technical overview
 
-The application is build around topics and events belonging to a topic.
+The application is built around topics and events belonging to a topic.
 Topics can be public or invite-only.
 
 The application is designed in such a way that additionally to using the version available at https://letsdo.events it is also simple to run it **on your own server**.
@@ -36,7 +36,10 @@ This makes sure the web server rebuilds all routing functions with every request
 so you can make overwrite functions while the application is running.
 
 There is also a helper to reload all open browser sessions directly from your REPL/editor:
-`(do (in-ns 'dev.reload) (reload-browser))`
+
+```
+(do (in-ns 'dev.reload) (reload-browser))
+```
 
 The function uses a web socket connect to tell the browsers to reload.
 

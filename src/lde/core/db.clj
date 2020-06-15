@@ -38,7 +38,7 @@
 
 (defmacro tx
   "Execute body as DB transaction.
-  All DB write need to be wrappen with tx.
+  All DB writes need to be wrappen with tx.
   Only one tx can run at a time.
   Having a single transactor for DB writes allows you to specify
   all kinds of constraints of your DB writes as simple queries within a transaction.
@@ -78,12 +78,12 @@
   [ctx transaction]
   (swap! (::transaction ctx)
          #(if (nil? %)
-            (throw (Exception. "DB writes must be wrapped transaction"))
+            (throw (Exception. "DB writes must be wrapped in transaction"))
             (concat % transaction))))
 
 (defn save-multi!
   "Creates a transaction for a list of entities.
-  Each must have an :id.
+  Each transaction must have an :id.
   Ignores nil items."
   [ctx entitiy-list]
   (->> entitiy-list

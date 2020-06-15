@@ -5,6 +5,7 @@
     [clojure.string :as str]
     [clojure.repl]
     [clojure.java.io :as io]
+    [clojure.spec.alpha :as s]
     [crux.api :as crux]
     [crux.decorators.aggregation.alpha :as aggr]
     [cider-nrepl.main :as cider]
@@ -158,5 +159,15 @@
   (settings/get-jwt-secret @ctx)
 
   (db/exists-by-id? @ctx :settings/cookie-secret)
+
+  (db/tx @ctx
+        (db/save! {:id :some-id
+                    ::some-attr 1}
+                  @ctx))
+
+  (db/get-by-id @ctx :some-id)
+
+  (s/def ::some-attr int?)
+  (s/def ::some-attr string?)
 
 )
