@@ -85,7 +85,7 @@
 
 (defn create [data ctx]
   (db/tx ctx
-         (let [image (image/new-entity-from-data (:image data) ctx)
+         (let [image (image/new-entity-from-data (:image data))
                event (-> data
                          (select-keys (keys event-keys))
                          (rename-keys event-keys)
@@ -105,7 +105,7 @@
 (defn update [data event-id ctx]
   (db/tx ctx
          (when-let [existing-event (db/get-by-id ctx event-id)]
-           (let [image (image/new-entity-from-data (:image data) ctx)
+           (let [image (image/new-entity-from-data (:image data))
            delete-image (:delete-image data)
            previous-image-id (:event/image existing-event)
            new-event (-> existing-event
