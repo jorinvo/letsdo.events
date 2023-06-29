@@ -25,12 +25,12 @@ Optionally [Honeycomb](https://www.honeycomb.io/) can be configured to get obser
 
 ## Running the application
 
-Run the application directly with `clojure -m lde.main`
+Run the application directly with `clj -Mrun`
 
 
 ## Development
 
-For development run `clojure -Adev`
+For development run `clj -Mdev`
 
 This makes sure the web server rebuilds all routing functions with every request
 so you can make overwrite functions while the application is running.
@@ -46,7 +46,7 @@ The function uses a web socket connect to tell the browsers to reload.
 
 ## Building the application
 
-Pack the application into a single jar file with `clojure -Auberjar`
+Pack the application into a single jar file with `clj -Muberjar`
 
 Start the application with `java -cp target/lde.jar clojure.main -m lde.main`
 
